@@ -1,0 +1,2292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#0f0c29" />
+  <title>Chronicle — Blog Network</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+  <script>emailjs.init({ publicKey: "XNu5XO1PovG1snr69" });</script>
+  <style>
+    /* ── Animated gradient background ─────────────────────────── */
+    body {
+      background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+      min-height: 100vh;
+    }
+    @keyframes gradShift {
+      0%   { background-position: 0% 50%; }
+      50%  { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+    .bg-animated {
+      background: linear-gradient(-45deg, #0f0c29, #302b63, #1a1a4e, #24243e, #1e1b4b);
+      background-size: 400% 400%;
+      animation: gradShift 18s ease infinite;
+    }
+    /* ── Glass card ─────────────────────────────────────────────── */
+    .glass {
+      background: rgba(255,255,255,0.07);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border: 1px solid rgba(255,255,255,0.13);
+    }
+    .glass-light {
+      background: rgba(255,255,255,0.12);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border: 1px solid rgba(255,255,255,0.18);
+    }
+    /* ── Custom scrollbar ─────────────────────────────────────── */
+    .custom-scroll::-webkit-scrollbar { width: 4px; }
+    .custom-scroll::-webkit-scrollbar-track { background: transparent; }
+    .custom-scroll::-webkit-scrollbar-thumb { background: rgba(139,92,246,0.5); border-radius: 4px; }
+    /* ── Dot grid ─────────────────────────────────────────────── */
+    .dot-grid {
+      background-image: radial-gradient(rgba(139,92,246,0.3) 1px, transparent 1px);
+      background-size: 24px 24px;
+    }
+    /* ── Card hover lift ──────────────────────────────────────── */
+    .card-lift {
+      transition: transform 0.25s ease, box-shadow 0.25s ease;
+      cursor: pointer;
+    }
+    .card-lift:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 20px 60px -8px rgba(139,92,246,0.35);
+    }
+    /* ── Gradient text ────────────────────────────────────────── */
+    .grad-text {
+      background: linear-gradient(135deg, #a78bfa 0%, #f472b6 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .grad-text-2 {
+      background: linear-gradient(135deg, #6366f1 0%, #a78bfa 50%, #f472b6 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    /* ── Loading overlay ──────────────────────────────────────── */
+    #loading-overlay {
+      position: fixed; inset: 0;
+      background: #0f0c29;
+      display: flex; align-items: center; justify-content: center;
+      z-index: 9999;
+      transition: opacity 0.4s ease;
+    }
+    .spinner {
+      width: 44px; height: 44px;
+      border: 3px solid rgba(139,92,246,0.2);
+      border-top-color: #a78bfa;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    /* ── Toast ────────────────────────────────────────────────── */
+    #toast {
+      position: fixed; top: 1.25rem; right: 1.25rem;
+      transform: translateY(-160%);
+      background: rgba(30,27,75,0.95);
+      backdrop-filter: blur(16px);
+      color: #f1f5f9;
+      padding: 0.75rem 1.4rem;
+      border-radius: 1rem;
+      font-size: 0.82rem; font-weight: 600;
+      box-shadow: 0 8px 32px rgba(0,0,0,.5);
+      border: 1px solid rgba(139,92,246,0.3);
+      z-index: 9998;
+      transition: transform 0.35s cubic-bezier(.34,1.56,.64,1);
+      max-width: min(340px, calc(100vw - 2.5rem)); text-align: center;
+    }
+    #toast.show { transform: translateY(0); }
+    #toast.success { border-color: rgba(34,197,94,0.4); background: rgba(20,83,45,0.95); }
+    #toast.error   { border-color: rgba(239,68,68,0.4); background: rgba(127,29,29,0.95); }
+    #toast.info    { border-color: rgba(139,92,246,0.4); }
+    /* ── Bottom nav ───────────────────────────────────────────── */
+    #bottom-nav {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      height: calc(4.5rem + env(safe-area-inset-bottom, 0px));
+      padding-bottom: env(safe-area-inset-bottom, 0px);
+      background: rgba(15,12,41,0.92);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      display: flex; align-items: stretch;
+      border-top: 1px solid rgba(139,92,246,0.2);
+      z-index: 50;
+    }
+    #bottom-nav .nav-tab {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 4px;
+      color: rgba(139,92,246,0.5);
+      font-size: 10px; font-weight: 700; letter-spacing: 0.05em;
+      text-transform: uppercase; cursor: pointer;
+      border: none; background: transparent;
+      transition: color 0.15s ease; padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+    #bottom-nav .nav-tab.active { color: #a78bfa; }
+    #bottom-nav .nav-tab.compose { color: #fff; }
+    #bottom-nav .nav-tab.compose .compose-bubble {
+      width: 48px; height: 48px;
+      background: linear-gradient(135deg,#6366f1,#a78bfa);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 4px 20px rgba(139,92,246,0.5);
+    }
+    @media (max-width: 1023px) {
+      #feed-container, .create-scroll-area {
+        padding-bottom: calc(5.5rem + env(safe-area-inset-bottom, 0px)) !important;
+      }
+    }
+    /* ── Recently Viewed ──────────────────────────────────────── */
+    #recently-viewed-section {
+      padding: 0.75rem 1rem 0.75rem;
+    }
+    @media (min-width: 640px) {
+      #recently-viewed-section { padding: 0.75rem 1.5rem 0.75rem; }
+    }
+    @media (min-width: 1024px) {
+      #recently-viewed-section { padding: 0.75rem 2.5rem 0.75rem; }
+    }
+    /* When recently-viewed is present, reduce the feed container's top padding
+       so the grid doesn't appear pushed down */
+    #recently-viewed-section + #feed-container {
+      padding-top: 0.75rem !important;
+    }
+    @media (min-width: 640px) {
+      #recently-viewed-section + #feed-container {
+        padding-top: 1rem !important;
+      }
+    }
+    .rv-scroll {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+      scrollbar-width: none;
+    }
+    .rv-scroll::-webkit-scrollbar { display: none; }
+    .rv-card {
+      flex-shrink: 0;
+      width: 175px;
+      border-radius: 0.875rem;
+      overflow: hidden;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(139,92,246,0.15);
+      cursor: pointer;
+      transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
+      text-decoration: none;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      position: relative;
+      gap: 0;
+      height: 62px;
+    }
+    .rv-card:hover {
+      border-color: rgba(139,92,246,0.5);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(139,92,246,0.2);
+    }
+    .rv-card-thumb {
+      width: 62px;
+      height: 62px;
+      min-width: 62px;
+      background: linear-gradient(135deg, rgba(99,102,241,0.2), rgba(139,92,246,0.2));
+      overflow: hidden;
+      flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .rv-card-thumb img { width: 100%; height: 100%; object-fit: cover; }
+    .rv-card-body { padding: 0 9px 0 8px; flex: 1; min-width: 0; }
+    .rv-card-title {
+      font-size: 11px; font-weight: 700; color: #e2e8f0;
+      line-height: 1.35; display: -webkit-box;
+      -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+      line-clamp: 2; overflow: hidden;
+    }
+    .rv-card-meta {
+      font-size: 9.5px; color: rgba(148,163,184,0.5);
+      margin-top: 3px; display: flex; align-items: center; gap: 3px;
+    }
+    .rv-type-badge {
+      font-size: 8.5px; font-weight: 700; letter-spacing: 0.04em;
+      padding: 1px 5px; border-radius: 20px; line-height: 1.5;
+      flex-shrink: 0;
+    }
+    .rv-dismiss {
+      position: absolute; top: 4px; right: 4px;
+      width: 16px; height: 16px; border-radius: 50%;
+      background: rgba(15,12,41,0.85);
+      border: 1px solid rgba(139,92,246,0.2);
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; transition: opacity 0.15s;
+      cursor: pointer; color: #94a3b8;
+    }
+    .rv-card:hover .rv-dismiss { opacity: 1; }
+    /* ── Search bar ───────────────────────────────────────────── */
+    #search-wrapper {
+      position: relative;
+    }
+    #search-input {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(139,92,246,0.25);
+      color: #e2e8f0;
+      border-radius: 1rem;
+      transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+      width: 100%;
+    }
+    #search-input::placeholder { color: rgba(148,163,184,0.4); }
+    #search-input:focus {
+      outline: none;
+      background: rgba(255,255,255,0.09);
+      border-color: rgba(139,92,246,0.6);
+      box-shadow: 0 0 0 3px rgba(139,92,246,0.15);
+    }
+    /* mode pill toggle */
+    #search-mode-toggle {
+      display: flex;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(139,92,246,0.2);
+      border-radius: 0.75rem;
+      padding: 3px;
+      gap: 2px;
+      flex-shrink: 0;
+    }
+    .mode-pill {
+      padding: 4px 12px;
+      border-radius: 0.55rem;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      cursor: pointer;
+      border: none;
+      transition: background 0.18s, color 0.18s;
+      color: rgba(148,163,184,0.6);
+      background: transparent;
+      white-space: nowrap;
+    }
+    .mode-pill.active {
+      background: linear-gradient(135deg,#6366f1,#8b5cf6);
+      color: #fff;
+      box-shadow: 0 2px 10px rgba(139,92,246,0.4);
+    }
+    /* results dropdown */
+    #search-results-panel {
+      position: absolute;
+      top: calc(100% + 8px);
+      left: 0; right: 0;
+      background: rgba(18,15,50,0.97);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border: 1px solid rgba(139,92,246,0.25);
+      border-radius: 1.25rem;
+      box-shadow: 0 24px 60px rgba(0,0,0,0.55);
+      z-index: 100;
+      max-height: 420px;
+      overflow-y: auto;
+      opacity: 0;
+      transform: translateY(-6px);
+      pointer-events: none;
+      transition: opacity 0.2s ease, transform 0.2s ease;
+    }
+    #search-results-panel.open {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: all;
+    }
+    #search-results-panel::-webkit-scrollbar { width: 4px; }
+    #search-results-panel::-webkit-scrollbar-track { background: transparent; }
+    #search-results-panel::-webkit-scrollbar-thumb { background: rgba(139,92,246,0.4); border-radius: 4px; }
+    .search-result-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 12px 16px;
+      cursor: pointer;
+      border-bottom: 1px solid rgba(139,92,246,0.08);
+      transition: background 0.15s;
+      text-decoration: none;
+    }
+    .search-result-item:last-child { border-bottom: none; }
+    .search-result-item:hover { background: rgba(139,92,246,0.1); }
+    .search-result-icon {
+      width: 34px; height: 34px;
+      border-radius: 0.6rem;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+    /* ── Post modal ───────────────────────────────────────────── */
+    #post-modal {
+      position: fixed; inset: 0; z-index: 500;
+      display: flex; align-items: center; justify-content: center;
+      padding: 1rem;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.25s ease;
+    }
+    #post-modal.open { opacity: 1; pointer-events: all; }
+    #post-modal .modal-backdrop {
+      position: absolute; inset: 0;
+      background: rgba(10,8,30,0.8);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+    }
+    #post-modal .modal-box {
+      position: relative; z-index: 1;
+      width: 100%; max-width: 760px; max-height: 90vh;
+      overflow-y: auto;
+      border-radius: 1.5rem;
+      background: linear-gradient(160deg, rgba(30,27,75,0.97) 0%, rgba(20,18,54,0.97) 100%);
+      border: 1px solid rgba(139,92,246,0.25);
+      box-shadow: 0 32px 80px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.06);
+      transform: scale(0.94) translateY(12px);
+      transition: transform 0.3s cubic-bezier(.34,1.3,.64,1);
+    }
+    #post-modal.open .modal-box { transform: scale(1) translateY(0); }
+    /* Mobile: bottom sheet */
+    @media (max-width: 1023px) {
+      #post-modal {
+        align-items: flex-end;
+        padding: 0;
+      }
+      #post-modal .modal-box {
+        max-width: 100%;
+        max-height: calc(92vh - env(safe-area-inset-bottom, 0px));
+        border-radius: 1.5rem 1.5rem 0 0;
+        transform: translateY(100%);
+        transition: transform 0.35s cubic-bezier(.32,1.2,.64,1);
+        padding-bottom: calc(env(safe-area-inset-bottom, 0px));
+      }
+      #post-modal.open .modal-box {
+        transform: translateY(0);
+      }
+    }
+    /* ── Edit modal ───────────────────────────────────────────── */
+    #edit-modal {
+      position: fixed; inset: 0; z-index: 600;
+      display: flex; align-items: center; justify-content: center;
+      padding: 1rem;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.25s ease;
+    }
+    #edit-modal.open { opacity: 1; pointer-events: all; }
+    #edit-modal .modal-backdrop {
+      position: absolute; inset: 0;
+      background: rgba(10,8,30,0.85);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+    #edit-modal .modal-box {
+      position: relative; z-index: 1;
+      width: 100%; max-width: 620px; max-height: 90vh;
+      overflow-y: auto;
+      border-radius: 1.5rem;
+      background: linear-gradient(160deg, rgba(30,27,75,0.98) 0%, rgba(20,18,54,0.98) 100%);
+      border: 1px solid rgba(139,92,246,0.3);
+      box-shadow: 0 32px 80px rgba(0,0,0,0.6);
+      transform: scale(0.94) translateY(12px);
+      transition: transform 0.3s cubic-bezier(.34,1.3,.64,1);
+    }
+    #edit-modal.open .modal-box { transform: scale(1) translateY(0); }
+    /* ── Neon glow button ─────────────────────────────────────── */
+    .btn-glow {
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      box-shadow: 0 4px 20px rgba(139,92,246,0.4);
+      transition: box-shadow 0.2s, transform 0.2s;
+    }
+    .btn-glow:hover {
+      box-shadow: 0 6px 28px rgba(139,92,246,0.65);
+      transform: translateY(-1px);
+    }
+    /* ── Input dark ───────────────────────────────────────────── */
+    .input-dark {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(139,92,246,0.25);
+      color: #e2e8f0;
+      border-radius: 0.875rem;
+      transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+    }
+    .input-dark::placeholder { color: rgba(148,163,184,0.4); }
+    .input-dark:focus {
+      outline: none;
+      background: rgba(255,255,255,0.1);
+      border-color: rgba(139,92,246,0.6);
+      box-shadow: 0 0 0 3px rgba(139,92,246,0.15);
+    }
+    /* ── Prose content ────────────────────────────────────────── */
+    .post-prose { line-height: 1.9; color: #cbd5e1; }
+    .post-prose p { margin-bottom: 1rem; }
+    /* ── Post card entrance animation ────────────────────────── */
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .post-card { animation: fadeInUp 0.32s ease both; }
+    .post-card:nth-child(1) { animation-delay: 0.03s; }
+    .post-card:nth-child(2) { animation-delay: 0.07s; }
+    .post-card:nth-child(3) { animation-delay: 0.11s; }
+    .post-card:nth-child(4) { animation-delay: 0.15s; }
+    .post-card:nth-child(5) { animation-delay: 0.19s; }
+    .post-card:nth-child(6) { animation-delay: 0.23s; }
+    .post-card:nth-child(n+7) { animation-delay: 0.26s; }
+    /* ── Search bar sticky offset on desktop (no mobile header) ─ */
+    @media (min-width: 1024px) {
+      #feed-search-bar { top: 0 !important; }
+    }
+    /* ── Skeleton shimmer ─────────────────────────────────────── */
+    @keyframes shimmer {
+      0%   { background-position: -400px 0; }
+      100% { background-position: 400px 0; }
+    }
+    .skeleton-shimmer {
+      background: linear-gradient(90deg, rgba(139,92,246,0.06) 25%, rgba(139,92,246,0.12) 50%, rgba(139,92,246,0.06) 75%);
+      background-size: 800px 100%;
+      animation: shimmer 1.6s infinite;
+    }
+  </style>
+</head>
+<body class="bg-animated text-slate-100 antialiased min-h-screen">
+
+<!-- LOADING OVERLAY -->
+<div id="loading-overlay" role="status" aria-label="Loading">
+  <div class="text-center space-y-5">
+    <div class="relative mx-auto w-14 h-14">
+      <div class="spinner absolute inset-0 m-auto"></div>
+      <div class="w-7 h-7 absolute inset-0 m-auto rounded-lg bg-indigo-600 flex items-center justify-center text-white font-black text-xs">C</div>
+    </div>
+    <p class="text-purple-300 text-xs tracking-widest uppercase font-semibold">Chronicle</p>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast" role="alert" aria-live="polite"></div>
+
+<!-- ═══ POST READ MODAL ══════════════════════════════════════════ -->
+<div id="post-modal" role="dialog" aria-modal="true" aria-label="Read post">
+  <div class="modal-backdrop" id="post-modal-backdrop"></div>
+  <div class="modal-box custom-scroll" id="post-modal-box">
+    <!-- Drag handle (mobile only) -->
+    <div class="lg:hidden flex justify-center pt-3 pb-1 flex-shrink-0" aria-hidden="true">
+      <div class="w-10 h-1 rounded-full" style="background:rgba(255,255,255,0.2)"></div>
+    </div>
+    <!-- Cover image -->
+    <div id="modal-cover" class="relative h-48 sm:h-64 overflow-hidden rounded-t-3xl lg:rounded-none bg-gradient-to-br from-indigo-900 to-purple-900 flex-shrink-0">
+      <img id="modal-img" src="" alt="" class="w-full h-full object-cover hidden" />
+      <div id="modal-img-placeholder" class="w-full h-full flex items-center justify-center">
+        <svg class="w-16 h-16 text-indigo-700" fill="none" stroke="currentColor" stroke-width="1" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909"/></svg>
+      </div>
+      <!-- Close button -->
+      <button id="modal-close" class="absolute top-4 right-4 w-9 h-9 rounded-full bg-black/50 hover:bg-black/80 text-white flex items-center justify-center transition-colors focus:outline-none focus:ring-2 focus:ring-purple-400" aria-label="Close">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <!-- Body -->
+    <div class="p-5 sm:p-8 space-y-5" style="padding-bottom:max(1.5rem,env(safe-area-inset-bottom,0px))">
+      <!-- Author row -->
+      <div class="flex items-center justify-between gap-3">
+        <div class="flex items-center gap-3">
+          <div id="modal-avatar" class="w-9 h-9 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-black text-sm flex-shrink-0"></div>
+          <div>
+            <p id="modal-author" class="text-purple-300 text-sm font-semibold"></p>
+            <time id="modal-date" class="text-slate-500 text-xs"></time>
+          </div>
+        </div>
+        <!-- Owner actions — visible only to post owner -->
+        <div class="flex items-center gap-2">
+          <button id="modal-delete-btn"
+            class="hidden items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold text-rose-400
+                   border border-rose-500/30 hover:border-rose-400 hover:text-rose-300 hover:bg-rose-500/10
+                   transition-all focus:outline-none focus:ring-2 focus:ring-rose-400">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"/></svg>
+            Delete
+          </button>
+          <button id="modal-edit-btn"
+            class="hidden items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold text-purple-300
+                   border border-purple-500/30 hover:border-purple-400 hover:text-purple-200 hover:bg-purple-500/10
+                   transition-all focus:outline-none focus:ring-2 focus:ring-purple-400">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125"/></svg>
+            Edit Post
+          </button>
+        </div>
+      </div>
+      <!-- Delete confirmation panel (shown when delete is clicked) -->
+      <div id="modal-delete-confirm" class="hidden rounded-2xl px-4 py-3 gap-3 items-center" style="background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.22)">
+        <svg class="w-4 h-4 text-rose-400 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/></svg>
+        <span class="text-rose-300 text-sm font-semibold flex-1">Delete this post permanently?</span>
+        <div class="flex gap-2 flex-shrink-0">
+          <button id="modal-delete-confirm-yes"
+            class="px-3 py-1.5 rounded-xl text-xs font-bold text-white focus:outline-none focus:ring-2 focus:ring-rose-400 transition-all hover:opacity-90"
+            style="background:linear-gradient(135deg,rgba(220,38,38,0.8),rgba(239,68,68,0.7))">
+            Delete forever
+          </button>
+          <button id="modal-delete-confirm-no"
+            class="px-3 py-1.5 rounded-xl text-xs font-bold text-slate-400 hover:text-white transition-colors focus:outline-none"
+            style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1)">
+            Cancel
+          </button>
+        </div>
+      </div>
+      <!-- Title -->
+      <h2 id="modal-title" class="text-2xl sm:text-3xl font-black text-white leading-tight tracking-tight"></h2>
+      <!-- Full content -->
+      <div id="modal-content" class="post-prose text-sm sm:text-base"></div>
+      <!-- Divider -->
+      <hr class="border-purple-500/20 my-6" />
+      <!-- Subscribe section -->
+      <div class="glass rounded-2xl p-5 space-y-3">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-pink-500 to-purple-600 flex items-center justify-center flex-shrink-0">
+            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75"/></svg>
+          </div>
+          <div>
+            <p class="text-white text-sm font-bold">Stay in the loop</p>
+            <p class="text-slate-400 text-xs">Leave your email to get notified about future updates from this author.</p>
+          </div>
+        </div>
+        <div class="flex gap-2">
+          <input id="subscribe-email" type="email" placeholder="your@email.com"
+            class="input-dark flex-1 px-4 py-2.5 text-sm"
+            aria-label="Your email for updates" />
+          <button id="subscribe-btn"
+            class="btn-glow px-4 py-2.5 rounded-xl text-white text-sm font-bold flex-shrink-0 focus:outline-none focus:ring-2 focus:ring-purple-400">
+            Notify Me
+          </button>
+        </div>
+        <p id="subscribe-success" class="hidden text-emerald-400 text-xs font-semibold text-center">✓ You're subscribed!</p>
+      </div>
+      <!-- Comments section -->
+      <hr class="border-purple-500/20" />
+      <div id="comments-section" class="space-y-4">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-violet-500 to-purple-700 flex items-center justify-center flex-shrink-0">
+            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z"/></svg>
+          </div>
+          <p class="text-white text-sm font-bold">Comments</p>
+          <span id="comments-count" class="text-[10px] font-bold px-1.5 py-0.5 rounded-full"
+                style="background:rgba(139,92,246,0.2);color:#a78bfa;border:1px solid rgba(139,92,246,0.2)"></span>
+        </div>
+        <div id="comments-list" class="space-y-3 max-h-72 overflow-y-auto custom-scroll pr-1"></div>
+        <form id="comment-form" class="flex gap-2" novalidate>
+          <input id="comment-input" type="text" placeholder="Write a comment…"
+            class="input-dark flex-1 px-4 py-2.5 text-sm"
+            maxlength="500" aria-label="Write a comment" autocomplete="off" />
+          <button type="submit" id="comment-submit-btn"
+            class="btn-glow px-4 py-2.5 rounded-xl text-white text-sm font-bold flex-shrink-0 focus:outline-none focus:ring-2 focus:ring-purple-400">
+            Post
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- ═══ EDIT MODAL ═══════════════════════════════════════════════ -->
+<div id="edit-modal" role="dialog" aria-modal="true" aria-label="Edit post">
+  <div class="modal-backdrop" id="edit-modal-backdrop"></div>
+  <div class="modal-box custom-scroll" id="edit-modal-box">
+    <div class="p-6 sm:p-8 space-y-5">
+      <div class="flex items-center justify-between">
+        <h3 class="text-xl font-black text-white">Edit Post</h3>
+        <button id="edit-modal-close" class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors focus:outline-none" aria-label="Close edit">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <form id="edit-form" class="space-y-4" novalidate>
+        <div class="space-y-1.5">
+          <label for="edit-title" class="block text-xs font-bold text-purple-300 uppercase tracking-widest">Title</label>
+          <input type="text" id="edit-title" name="title" required maxlength="120"
+            class="input-dark w-full px-4 py-3 text-sm font-semibold" />
+        </div>
+        <div class="space-y-1.5">
+          <label for="edit-content" class="block text-xs font-bold text-purple-300 uppercase tracking-widest">Content</label>
+          <textarea id="edit-content" name="content" required rows="10" maxlength="5000"
+            class="input-dark w-full px-4 py-3 text-sm resize-none leading-relaxed"></textarea>
+          <p class="text-right text-[10px] text-slate-500"><span id="edit-char-count">0</span> / 5000</p>
+        </div>
+        <div class="flex gap-3 pt-1">
+          <button type="button" id="edit-cancel-btn"
+            class="flex-1 py-3 rounded-xl text-sm font-bold text-slate-400 border border-slate-600 hover:border-slate-400 hover:text-slate-200 transition-colors focus:outline-none">
+            Cancel
+          </button>
+          <button type="submit" id="edit-save-btn"
+            class="btn-glow flex-1 py-3 rounded-xl text-white text-sm font-bold focus:outline-none focus:ring-2 focus:ring-purple-400 flex items-center justify-center gap-2">
+            <span id="edit-save-label">Save Changes</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- APP MOUNT -->
+<div id="app" class="min-h-screen flex flex-col"></div>
+
+<script type="module">
+import { auth, db } from "./js/firebase-config.js";
+import { onAuthStateChanged, updateProfile } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { doc, getDoc, setDoc, addDoc, collection, query, orderBy, getDocs, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { handleSignUp, handleSignIn, handleSignOut } from "./js/auth.js";
+import { initLiveFeed, handleCreatePost, processImageFile, clearSelectedImage, handleEditPost, handleSubscribeEmail, handleDeletePost, incrementViewCount } from "./js/posts.js";
+
+const app            = document.getElementById('app');
+const loadingOverlay = document.getElementById('loading-overlay');
+let   feedUnsub      = null;
+// Track current open post data for modal operations
+let   currentPostId  = null;
+
+/* ── Toast ─────────────────────────────────────────────────────── */
+window.showToast = function(msg, type = 'info', duration = 3500) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className   = `show ${type}`;
+  clearTimeout(window._toastTimer);
+  window._toastTimer = setTimeout(() => { t.className = ''; }, duration);
+};
+
+function hideLoader() {
+  loadingOverlay.style.opacity = '0';
+  setTimeout(() => loadingOverlay.style.display = 'none', 420);
+}
+
+function stopFeed() {
+  if (feedUnsub) { feedUnsub(); feedUnsub = null; }
+}
+
+function escHtml(str) {
+  return String(str ?? '')
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+/* ── RECENTLY VIEWED — localStorage helpers ──────────────────────
+   Stores up to 8 entries. Each entry shape:
+     { type: 'post'|'web', id, title, snippet, url, image, author, viewedAt }
+   'post' entries open the Chronicle modal; 'web' entries open in a new tab.
+──────────────────────────────────────────────────────────────────── */
+const RV_KEY = 'chronicle_recent_views';
+const RV_MAX = 8;
+
+function getRecentViews() {
+  try { return JSON.parse(localStorage.getItem(RV_KEY) || '[]'); } catch { return []; }
+}
+
+function saveRecentView(entry) {
+  let list = getRecentViews();
+  list = list.filter(e => e.url !== entry.url && e.id !== entry.id);
+  list.unshift({ ...entry, viewedAt: Date.now() });
+  list = list.slice(0, RV_MAX);
+  try { localStorage.setItem(RV_KEY, JSON.stringify(list)); } catch { /* storage full */ }
+  renderRecentlyViewed();
+}
+
+function removeRecentView(urlOrId) {
+  let list = getRecentViews().filter(e => e.url !== urlOrId && e.id !== urlOrId);
+  try { localStorage.setItem(RV_KEY, JSON.stringify(list)); } catch { /* */ }
+  renderRecentlyViewed();
+}
+
+function clearAllRecentViews() {
+  try { localStorage.removeItem(RV_KEY); } catch { /* */ }
+  renderRecentlyViewed();
+}
+
+function renderRecentlyViewed() {
+  const anchor = document.getElementById('feed-container');
+  if (!anchor) return;
+
+  const list = getRecentViews();
+  const existing = document.getElementById('recently-viewed-section');
+
+  if (!list.length) {
+    if (existing) existing.remove();
+    return;
+  }
+
+  const tagColors = [
+    'from-indigo-500 to-purple-600',
+    'from-pink-500 to-rose-600',
+    'from-cyan-500 to-blue-600',
+    'from-amber-500 to-orange-600',
+  ];
+
+  const cardsHtml = list.map((e, i) => {
+    const color = tagColors[i % tagColors.length];
+    const isWeb = e.type === 'web';
+    const thumb = e.image
+      ? `<img src="${escHtml(e.image)}" alt="" loading="lazy" decoding="async" />`
+      : `<div class="w-full h-full flex items-center justify-center">
+           <div class="w-7 h-7 rounded-lg bg-gradient-to-br ${color} flex items-center justify-center text-white font-black text-xs opacity-70">
+             ${isWeb ? '🌐' : escHtml((e.title?.[0] || 'A').toUpperCase())}
+           </div>
+         </div>`;
+    const badge = isWeb
+      ? `<span class="rv-type-badge" style="background:rgba(99,102,241,0.15);color:#818cf8;border:1px solid rgba(99,102,241,0.25)">Web</span>`
+      : `<span class="rv-type-badge" style="background:rgba(139,92,246,0.15);color:#a78bfa;border:1px solid rgba(139,92,246,0.25)">Chronicle</span>`;
+    const meta  = e.author ? escHtml(e.author) : (isWeb ? escHtml(e.source || '') : '');
+    const key   = e.url || e.id;
+
+    if (isWeb) {
+      return `
+      <a class="rv-card" href="${escHtml(e.url)}" target="_blank" rel="noopener noreferrer"
+         aria-label="Recently viewed: ${escHtml(e.title)}">
+        <div class="rv-card-thumb">${thumb}</div>
+        <div class="rv-card-body">
+          <p class="rv-card-title">${escHtml(e.title)}</p>
+          <div class="rv-card-meta">${badge}${meta ? `<span class="truncate max-w-[80px]">${meta}</span>` : ''}</div>
+        </div>
+        <button class="rv-dismiss" onclick="event.preventDefault();event.stopPropagation();window._removeRV('${escHtml(key)}')"
+                aria-label="Remove">
+          <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </a>`;
+    }
+    return `
+    <div class="rv-card" role="button" tabindex="0"
+         onclick="window._openRecentPost('${escHtml(e.id)}')"
+         onkeydown="if(event.key==='Enter'||event.key===' ')window._openRecentPost('${escHtml(e.id)}')"
+         aria-label="Recently viewed: ${escHtml(e.title)}">
+      <div class="rv-card-thumb">${thumb}</div>
+      <div class="rv-card-body">
+        <p class="rv-card-title">${escHtml(e.title)}</p>
+        <div class="rv-card-meta">${badge}${meta ? `<span class="truncate max-w-[80px]">${meta}</span>` : ''}</div>
+      </div>
+      <button class="rv-dismiss" onclick="event.stopPropagation();window._removeRV('${escHtml(key)}')"
+              aria-label="Remove">
+        <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>`;
+  }).join('');
+
+  const html = `
+    <div class="flex items-center justify-between mb-3">
+      <div class="flex items-center gap-2">
+        <div class="w-5 h-5 rounded-lg flex items-center justify-center flex-shrink-0" style="background:rgba(139,92,246,0.2)">
+          <svg class="w-3 h-3 text-purple-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+        </div>
+        <span class="text-xs font-bold text-slate-200 tracking-wide">Continue Reading</span>
+        <span class="text-[9px] font-bold px-1.5 py-0.5 rounded-full"
+              style="background:rgba(139,92,246,0.2);color:#a78bfa;border:1px solid rgba(139,92,246,0.2)">${list.length}</span>
+      </div>
+      <button onclick="window._clearRV()"
+              class="flex items-center gap-1 text-[10px] font-bold text-slate-600 hover:text-rose-400 transition-colors uppercase tracking-wide">
+        <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+        Clear
+      </button>
+    </div>
+    <div class="rv-scroll">${cardsHtml}</div>`;
+
+  if (existing) {
+    existing.innerHTML = html;
+  } else {
+    const section = document.createElement('div');
+    section.id = 'recently-viewed-section';
+    section.innerHTML = html;
+    anchor.parentElement.insertBefore(section, anchor);
+  }
+}
+
+window._removeRV       = removeRecentView;
+window._clearRV        = clearAllRecentViews;
+window._openRecentPost = function(id) {
+  const doc = window._postDocs?.[id];
+  if (doc) openPostModal(doc);
+};
+
+/* ── POST MODAL ──────────────────────────────────────────────────
+   Opens when any post card is clicked. Shows full content, edit
+   button (author only), and email subscription input.
+─────────────────────────────────────────────────────────────────── */
+function openPostModal(doc) {
+  const post = doc.data();
+  const id   = doc.id;
+  currentPostId = id;
+
+  // Record this view in recently viewed history
+  saveRecentView({
+    type:    'post',
+    id:      id,
+    title:   post.title   || 'Untitled Post',
+    snippet: post.content ? post.content.substring(0, 100) : '',
+    image:   post.image   || null,
+    author:  post.bloggerName || 'Anonymous',
+    url:     null,
+  });
+
+  // Increment view count (once per session per post)
+  incrementViewCount(id);
+
+  const modal   = document.getElementById('post-modal');
+  const user    = auth.currentUser;
+  const isOwner = user && post.bloggerId === user.uid;
+
+  // Cover image
+  const img = document.getElementById('modal-img');
+  const ph  = document.getElementById('modal-img-placeholder');
+  if (post.image) {
+    img.src = post.image;
+    img.alt = escHtml(post.title || '');
+    img.classList.remove('hidden');
+    ph.classList.add('hidden');
+  } else {
+    img.classList.add('hidden');
+    ph.classList.remove('hidden');
+  }
+
+  // Meta
+  const initial = (post.bloggerName?.[0] || 'A').toUpperCase();
+  document.getElementById('modal-avatar').textContent = initial;
+  document.getElementById('modal-author').textContent = post.bloggerName || 'Anonymous';
+  const dateStr = post.createdAt
+    ? new Date(post.createdAt.toDate()).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
+    : 'Just now';
+  document.getElementById('modal-date').textContent = dateStr;
+  document.getElementById('modal-title').textContent = post.title || 'Untitled Post';
+
+  // Content — preserve newlines as paragraphs
+  const contentEl = document.getElementById('modal-content');
+  contentEl.innerHTML = (post.content || '')
+    .split('\n').filter(Boolean)
+    .map(p => `<p>${escHtml(p)}</p>`).join('') ||
+    `<p class="text-slate-500 italic">No content.</p>`;
+
+  // Edit + Delete button visibility (owner only)
+  const editBtn   = document.getElementById('modal-edit-btn');
+  const deleteBtn = document.getElementById('modal-delete-btn');
+  if (isOwner) {
+    editBtn.classList.remove('hidden');   editBtn.classList.add('flex');
+    deleteBtn.classList.remove('hidden'); deleteBtn.classList.add('flex');
+  } else {
+    editBtn.classList.add('hidden');   editBtn.classList.remove('flex');
+    deleteBtn.classList.add('hidden'); deleteBtn.classList.remove('flex');
+  }
+
+  // Reset subscribe section
+  document.getElementById('subscribe-email').value = '';
+  document.getElementById('subscribe-success').classList.add('hidden');
+  document.getElementById('subscribe-email').classList.remove('hidden');
+  document.getElementById('subscribe-btn').classList.remove('hidden');
+
+  // Reset and load comments
+  document.getElementById('comment-input').value = '';
+  document.getElementById('comments-count').textContent = '';
+  loadComments(id);
+
+  // Wire comment form
+  document.getElementById('comment-form').onsubmit = async (e) => {
+    e.preventDefault();
+    const input     = document.getElementById('comment-input');
+    const submitBtn = document.getElementById('comment-submit-btn');
+    const text      = input.value.trim();
+    if (!text) return;
+    submitBtn.disabled = true;
+    submitBtn.textContent = '…';
+    try {
+      await addDoc(collection(db, 'posts', id, 'comments'), {
+        text,
+        authorId:   auth.currentUser?.uid   || null,
+        authorName: auth.currentUser?.displayName || 'Anonymous',
+        createdAt:  serverTimestamp(),
+      });
+      input.value = '';
+      await loadComments(id);
+    } catch (_) {
+      window.showToast('Failed to post comment.', 'error');
+    }
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Post';
+  };
+
+  modal.classList.add('open');
+  document.body.style.overflow = 'hidden';
+
+  // Wire edit button
+  editBtn.onclick = () => {
+    closePostModal();
+    openEditModal(id, post.title, post.content);
+  };
+
+  // Wire delete button — custom inline confirmation UI
+  const deleteConfirmPanel = document.getElementById('modal-delete-confirm');
+  deleteConfirmPanel.classList.add('hidden');
+  deleteConfirmPanel.classList.remove('flex');
+
+  deleteBtn.onclick = () => {
+    deleteConfirmPanel.classList.remove('hidden');
+    deleteConfirmPanel.classList.add('flex');
+    editBtn.classList.add('hidden');   editBtn.classList.remove('flex');
+    deleteBtn.classList.add('hidden'); deleteBtn.classList.remove('flex');
+  };
+
+  document.getElementById('modal-delete-confirm-yes').onclick = async () => {
+    await handleDeletePost(id, () => {
+      closePostModal();
+      document.getElementById('card-' + id)?.remove();
+      window.showToast('Post deleted.', 'success');
+    });
+  };
+
+  document.getElementById('modal-delete-confirm-no').onclick = () => {
+    deleteConfirmPanel.classList.add('hidden');
+    deleteConfirmPanel.classList.remove('flex');
+    if (isOwner) {
+      editBtn.classList.remove('hidden');   editBtn.classList.add('flex');
+      deleteBtn.classList.remove('hidden'); deleteBtn.classList.add('flex');
+    }
+  };
+
+  // Subscribe
+  document.getElementById('subscribe-btn').onclick = async () => {
+    const email = document.getElementById('subscribe-email').value.trim();
+    await handleSubscribeEmail(id, email, () => {
+      document.getElementById('subscribe-email').classList.add('hidden');
+      document.getElementById('subscribe-btn').classList.add('hidden');
+      document.getElementById('subscribe-success').classList.remove('hidden');
+    });
+  };
+}
+
+function closePostModal() {
+  document.getElementById('post-modal').classList.remove('open');
+  document.body.style.overflow = '';
+  currentPostId = null;
+}
+
+document.getElementById('modal-close').addEventListener('click', closePostModal);
+document.getElementById('post-modal-backdrop').addEventListener('click', closePostModal);
+
+/* ── EDIT MODAL ──────────────────────────────────────────────────
+   Pre-fills the edit form with current post data.
+─────────────────────────────────────────────────────────────────── */
+function openEditModal(postId, title, content) {
+  const modal = document.getElementById('edit-modal');
+  document.getElementById('edit-title').value   = title || '';
+  document.getElementById('edit-content').value = content || '';
+  document.getElementById('edit-char-count').textContent = (content || '').length;
+  modal.classList.add('open');
+  document.body.style.overflow = 'hidden';
+
+  // Char count
+  document.getElementById('edit-content').oninput = function() {
+    document.getElementById('edit-char-count').textContent = this.value.length;
+  };
+
+  // Form submit
+  document.getElementById('edit-form').onsubmit = async (e) => {
+    e.preventDefault();
+    const btn   = document.getElementById('edit-save-btn');
+    const label = document.getElementById('edit-save-label');
+    btn.disabled = true;
+    label.textContent = 'Saving…';
+
+    await handleEditPost(
+      postId,
+      document.getElementById('edit-title').value,
+      document.getElementById('edit-content').value,
+      () => closeEditModal()
+    );
+    btn.disabled = false;
+    label.textContent = 'Save Changes';
+  };
+}
+
+function closeEditModal() {
+  document.getElementById('edit-modal').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+document.getElementById('edit-modal-close').addEventListener('click', closeEditModal);
+document.getElementById('edit-cancel-btn').addEventListener('click', closeEditModal);
+document.getElementById('edit-modal-backdrop').addEventListener('click', closeEditModal);
+
+/* ── COMMENTS ─────────────────────────────────────────────────────
+   Loads comments from posts/{postId}/comments ordered by createdAt.
+─────────────────────────────────────────────────────────────────── */
+async function loadComments(postId) {
+  const listEl  = document.getElementById('comments-list');
+  const countEl = document.getElementById('comments-count');
+  if (!listEl) return;
+  listEl.innerHTML = `<div class="flex items-center justify-center gap-2 py-4">
+    <div class="w-4 h-4 rounded-full border-2 border-purple-500/30 border-t-purple-400 animate-spin"></div>
+    <span class="text-slate-500 text-xs">Loading comments…</span>
+  </div>`;
+  try {
+    const q    = query(collection(db, 'posts', postId, 'comments'), orderBy('createdAt', 'asc'));
+    const snap = await getDocs(q);
+    if (countEl) countEl.textContent = snap.size || '';
+    if (snap.empty) {
+      listEl.innerHTML = `<p class="text-slate-500 text-xs italic text-center py-3">No comments yet — be the first!</p>`;
+      return;
+    }
+    listEl.innerHTML = snap.docs.map(d => {
+      const c       = d.data();
+      const dateStr = c.createdAt
+        ? new Date(c.createdAt.toDate()).toLocaleString('en-US', {
+            month: 'short', day: 'numeric', year: 'numeric',
+            hour: 'numeric', minute: '2-digit'
+          })
+        : 'Just now';
+      const initial = escHtml((c.authorName?.[0] || 'A').toUpperCase());
+      return `
+        <div class="flex gap-3 p-3 rounded-xl" style="background:rgba(255,255,255,0.04);border:1px solid rgba(139,92,246,0.1)">
+          <div class="w-7 h-7 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-black text-[10px] flex-shrink-0">${initial}</div>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-baseline gap-2 flex-wrap">
+              <span class="text-purple-300 text-xs font-semibold">${escHtml(c.authorName || 'Anonymous')}</span>
+              <time class="text-slate-600 text-[10px]">${escHtml(dateStr)}</time>
+            </div>
+            <p class="text-slate-300 text-xs mt-1 leading-relaxed break-words">${escHtml(c.text)}</p>
+          </div>
+        </div>`;
+    }).join('');
+    // Scroll to bottom so newest comments are visible
+    listEl.scrollTop = listEl.scrollHeight;
+  } catch (_) {
+    listEl.innerHTML = `<p class="text-slate-500 text-xs italic text-center py-3">Could not load comments.</p>`;
+  }
+}
+
+// Close modals on Escape key
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') { closePostModal(); closeEditModal(); }
+});
+
+/* ═══════════════════════════════════════════════════════
+   VIEW: AUTH SCREEN
+   ═══════════════════════════════════════════════════════ */
+function renderAuthScreen(mode = 'login') {
+  stopFeed();
+  const isLogin = mode === 'login';
+  app.innerHTML = `
+  <div class="flex-1 min-h-screen flex items-stretch">
+    <!-- Left hero panel -->
+    <div class="hidden lg:flex lg:w-1/2 relative overflow-hidden flex-col justify-between p-14"
+         style="background: linear-gradient(135deg,rgba(15,12,41,0.95) 0%,rgba(48,43,99,0.95) 100%)">
+      <div class="dot-grid absolute inset-0 opacity-30"></div>
+      <!-- Glow orbs -->
+      <div class="absolute top-1/4 left-1/4 w-64 h-64 rounded-full bg-purple-600/20 blur-3xl pointer-events-none"></div>
+      <div class="absolute bottom-1/4 right-1/4 w-48 h-48 rounded-full bg-indigo-600/20 blur-3xl pointer-events-none"></div>
+      <div class="relative z-10 flex items-center gap-3">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-black text-sm shadow-lg shadow-indigo-500/40">C</div>
+        <span class="text-white font-black text-lg tracking-widest uppercase">Chronicle</span>
+      </div>
+      <div class="relative z-10 space-y-6 max-w-md">
+        <div class="inline-block px-3 py-1 rounded-full text-xs font-semibold tracking-wider uppercase" style="background:rgba(139,92,246,0.15);color:#a78bfa;border:1px solid rgba(139,92,246,0.3)">Live Blog Network</div>
+        <h2 class="text-5xl font-light text-white leading-tight">
+          Words that<br/><span class="grad-text font-black">move the world.</span>
+        </h2>
+        <p class="text-slate-400 text-sm leading-relaxed">Write, publish, and share real-time articles with a global audience. Join thousands of verified authors.</p>
+        <div class="flex items-center gap-3 pt-2">
+          <div class="flex -space-x-2">
+            ${['from-rose-400 to-pink-500','from-sky-400 to-blue-500','from-amber-400 to-yellow-500','from-emerald-400 to-green-500'].map(g =>
+              `<div class="w-8 h-8 rounded-full bg-gradient-to-br ${g} border-2 border-slate-900 ring-1 ring-white/10"></div>`
+            ).join('')}
+          </div>
+          <span class="text-slate-400 text-xs">Join thousands of bloggers</span>
+        </div>
+      </div>
+      <p class="relative z-10 text-slate-600 text-xs">&copy; 2026 Chronicle. All rights reserved.</p>
+    </div>
+    <!-- Right form panel -->
+    <div class="w-full lg:w-1/2 flex items-center justify-center p-8 sm:p-14 min-h-screen"
+         style="background:rgba(10,8,30,0.6);backdrop-filter:blur(20px)">
+      <div class="max-w-sm w-full space-y-8">
+        <div class="flex lg:hidden items-center gap-3 mb-2">
+          <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-black text-sm">C</div>
+          <span class="font-black text-white text-lg tracking-widest uppercase">Chronicle</span>
+        </div>
+        <div class="space-y-1">
+          <h1 class="text-2xl font-black tracking-tight text-white">${isLogin ? 'Welcome back' : 'Create your account'}</h1>
+          <p class="text-slate-400 text-sm">${isLogin ? 'Sign in to manage your live blog feed.' : 'Fill in your details to start publishing.'}</p>
+        </div>
+        <form id="auth-form" class="space-y-4" novalidate>
+          ${!isLogin ? `
+          <div class="space-y-1.5">
+            <label for="auth-name" class="block text-xs font-bold text-purple-300 uppercase tracking-widest">Full Name</label>
+            <input type="text" id="auth-name" name="name" required autocomplete="name" placeholder="Jane Cooper"
+              class="input-dark w-full px-4 py-3 text-sm" />
+          </div>` : ''}
+          <div class="space-y-1.5">
+            <label for="auth-email" class="block text-xs font-bold text-purple-300 uppercase tracking-widest">Email</label>
+            <input type="email" id="auth-email" name="email" required autocomplete="email" placeholder="name@domain.com"
+              class="input-dark w-full px-4 py-3 text-sm" />
+          </div>
+          <div class="space-y-1.5">
+            <label for="auth-password" class="block text-xs font-bold text-purple-300 uppercase tracking-widest">Password</label>
+            <div class="relative">
+              <input type="password" id="auth-password" name="password" required
+                autocomplete="${isLogin ? 'current-password' : 'new-password'}" placeholder="••••••••"
+                class="input-dark w-full px-4 py-3 pr-14 text-sm" />
+              <button type="button" id="toggle-pw"
+                class="absolute right-3 top-1/2 -translate-y-1/2 text-purple-400 hover:text-purple-200 text-xs font-bold uppercase tracking-wide focus:outline-none">Show</button>
+            </div>
+          </div>
+          <button type="submit" id="auth-submit-btn"
+            class="btn-glow w-full py-3.5 rounded-xl text-white text-sm font-bold tracking-wide
+                   flex items-center justify-center gap-2 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:ring-offset-2 focus:ring-offset-transparent">
+            <span id="auth-btn-label">${isLogin ? 'Sign In' : 'Create Account'}</span>
+          </button>
+        </form>
+        <p class="text-center text-sm text-slate-500">
+          ${isLogin ? "Don't have an account?" : 'Already have an account?'}
+          <button id="auth-toggle-btn" class="font-bold text-purple-400 hover:text-purple-300 ml-1 focus:outline-none focus:underline">
+            ${isLogin ? 'Sign Up' : 'Sign In'}
+          </button>
+        </p>
+      </div>
+    </div>
+  </div>`;
+
+  const pwInput = document.getElementById('auth-password');
+  const togglePw = document.getElementById('toggle-pw');
+  togglePw.addEventListener('click', () => {
+    const hidden = pwInput.type === 'password';
+    pwInput.type = hidden ? 'text' : 'password';
+    togglePw.textContent = hidden ? 'Hide' : 'Show';
+  });
+  document.getElementById('auth-toggle-btn').addEventListener('click', () => {
+    renderAuthScreen(isLogin ? 'signup' : 'login');
+  });
+  document.getElementById('auth-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn   = document.getElementById('auth-submit-btn');
+    const label = document.getElementById('auth-btn-label');
+    const email    = document.getElementById('auth-email').value.trim();
+    const password = document.getElementById('auth-password').value;
+    btn.disabled = true;
+    label.textContent = isLogin ? 'Signing in…' : 'Creating account…';
+    if (isLogin) {
+      await handleSignIn(email, password);
+    } else {
+      const name = document.getElementById('auth-name')?.value.trim() || '';
+      await handleSignUp(email, password, name, () => renderAuthScreen('login'));
+    }
+    btn.disabled = false;
+    label.textContent = isLogin ? 'Sign In' : 'Create Account';
+  });
+}
+
+/* ═══════════════════════════════════════════════════════
+   VIEW: DASHBOARD / LIVE FEED
+   ═══════════════════════════════════════════════════════ */
+function renderDashboard() {
+  const user = auth.currentUser;
+  app.innerHTML = `
+  <div class="flex-1 flex min-h-screen">
+    <!-- Sidebar (desktop) -->
+    <aside class="hidden lg:flex w-64 fixed inset-y-0 left-0 flex-col z-40 px-6 py-8"
+           style="background:rgba(10,8,30,0.85);backdrop-filter:blur(24px);border-right:1px solid rgba(139,92,246,0.15)"
+           role="navigation" aria-label="Main navigation">
+      <div class="absolute inset-0 dot-grid opacity-20 pointer-events-none"></div>
+      <div class="absolute top-1/3 left-1/2 -translate-x-1/2 w-48 h-48 rounded-full bg-purple-700/10 blur-3xl pointer-events-none"></div>
+      <div class="relative z-10 flex items-center gap-3 mb-10">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-black shadow-lg shadow-indigo-500/40">C</div>
+        <span class="text-white font-black text-lg tracking-widest uppercase">Chronicle</span>
+      </div>
+      <button id="btn-nav-profile"
+        class="relative z-10 flex items-center gap-3 px-3 py-3 rounded-2xl mb-8 glass w-full text-left
+               hover:bg-white/5 transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-purple-400">
+        <div id="sidebar-avatar" class="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-black text-sm flex-shrink-0 shadow-lg shadow-indigo-500/30 overflow-hidden">
+          ${(user?.displayName?.[0] || 'A').toUpperCase()}
+        </div>
+        <div class="overflow-hidden flex-1">
+          <p class="text-white text-xs font-semibold truncate">${user?.displayName || 'Blogger'}</p>
+          <p class="text-slate-500 text-[10px] truncate">${user?.email || ''}</p>
+        </div>
+        <svg class="w-3.5 h-3.5 text-slate-600 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/></svg>
+      </button>
+      <nav class="relative z-10 flex-1 space-y-1.5">
+        <button id="btn-nav-feed"
+          class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-white text-sm font-semibold
+                 focus:outline-none focus:ring-2 focus:ring-purple-400"
+          style="background:linear-gradient(135deg,rgba(99,102,241,0.3),rgba(139,92,246,0.3));border:1px solid rgba(139,92,246,0.3)"
+          aria-current="page">
+          <svg class="w-4 h-4 flex-shrink-0 text-purple-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10l4 4v10a2 2 0 01-2 2z"/></svg>
+          Live Feed
+        </button>
+        <button id="btn-nav-create"
+          class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:text-white
+                 hover:bg-white/5 text-sm font-semibold transition-colors
+                 focus:outline-none focus:ring-2 focus:ring-purple-400 border border-transparent hover:border-purple-500/20">
+          <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+          New Post
+        </button>
+      </nav>
+      <button id="btn-logout"
+        class="relative z-10 flex items-center gap-2 text-slate-600 hover:text-rose-400 text-xs font-bold uppercase tracking-widest
+               transition-colors focus:outline-none rounded-lg px-1 py-1">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h6a2 2 0 012 2v1"/></svg>
+        Sign Out
+      </button>
+    </aside>
+
+    <!-- Main content -->
+    <div class="flex-1 lg:pl-64 flex flex-col min-h-screen">
+      <!-- Mobile top bar -->
+      <header class="lg:hidden sticky top-0 z-30 px-4 py-2.5 flex items-center justify-between shadow-sm"
+              style="background:rgba(10,8,30,0.92);backdrop-filter:blur(20px);border-bottom:1px solid rgba(139,92,246,0.15)">
+        <div class="flex items-center gap-2.5">
+          <div class="w-7 h-7 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-black text-xs shadow-md shadow-indigo-500/30">C</div>
+          <span class="font-black text-white tracking-widest uppercase text-sm">Chronicle</span>
+        </div>
+        <div class="flex items-center gap-1.5">
+          <div class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></div>
+          <span class="text-[10px] text-emerald-400 font-semibold tracking-wide">Live</span>
+        </div>
+      </header>
+      <!-- Feed heading + Search -->
+      <div class="px-4 sm:px-6 lg:px-10 pt-5 pb-4 sticky z-20"
+           style="top:44px;background:rgba(10,8,30,0.82);backdrop-filter:blur(20px);border-bottom:1px solid rgba(139,92,246,0.12)"
+           id="feed-search-bar">
+        <div class="flex items-center gap-3 mb-3.5">
+          <div class="flex items-center gap-2">
+            <div class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse flex-shrink-0"></div>
+            <h2 class="text-lg font-black tracking-tight text-white">Live Feed</h2>
+          </div>
+          <span class="hidden sm:flex items-center gap-1.5 ml-auto text-[11px] text-slate-500">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+            Real-time &bull; <span class="text-purple-400 font-semibold">tap any card to read</span>
+          </span>
+        </div>
+
+        <!-- Search row -->
+        <div id="search-wrapper" class="flex items-center gap-2">
+          <!-- Mode toggle -->
+          <div id="search-mode-toggle" role="group" aria-label="Search mode">
+            <button class="mode-pill active" data-mode="local" aria-pressed="true">Chronicle</button>
+            <button class="mode-pill" data-mode="web" aria-pressed="false">Web</button>
+          </div>
+
+          <!-- Input + icon -->
+          <div class="relative flex-1">
+            <svg class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-purple-400 pointer-events-none" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 15.803 7.5 7.5 0 0015.803 15.803z"/>
+            </svg>
+            <input id="search-input" type="search" autocomplete="off" spellcheck="false"
+              placeholder="Search posts…"
+              class="pl-10 pr-10 py-2.5 text-sm"
+              aria-label="Search posts" aria-autocomplete="list" aria-controls="search-results-panel" />
+            <!-- Clear button -->
+            <button id="search-clear" aria-label="Clear search"
+              class="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 rounded-full bg-white/10 hover:bg-white/20
+                     text-slate-400 hover:text-white flex items-center justify-center transition-colors hidden">
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+              </svg>
+            </button>
+          </div>
+
+          <!-- Results panel (dropdown) -->
+          <div id="search-results-panel" role="listbox" aria-label="Search results"></div>
+        </div>
+      </div>
+      <!-- Post grid -->
+      <main class="flex-1 px-4 sm:px-6 lg:px-10 py-5" id="feed-container" role="main" aria-label="Blog post feed" aria-live="polite">
+        <div class="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+        ${[1,2,3,4,5,6].map((i) => `
+        <div class="animate-pulse glass rounded-2xl overflow-hidden" style="animation-delay:${(i-1)*0.05}s">
+          <div class="h-44 w-full skeleton-shimmer"></div>
+          <div class="p-5 space-y-3">
+            <div class="flex items-center gap-2">
+              <div class="h-6 w-6 rounded-full skeleton-shimmer"></div>
+              <div class="h-2.5 rounded w-24 skeleton-shimmer"></div>
+              <div class="h-2.5 rounded w-16 ml-auto skeleton-shimmer"></div>
+            </div>
+            <div class="h-4 rounded w-3/4 skeleton-shimmer"></div>
+            <div class="h-3 rounded w-full skeleton-shimmer"></div>
+            <div class="h-3 rounded w-5/6 skeleton-shimmer"></div>
+          </div>
+        </div>`).join('')}
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- Bottom nav (mobile) -->
+  <nav id="bottom-nav" class="lg:hidden" role="navigation" aria-label="Main navigation">
+    <button class="nav-tab active" id="btn-nav-feed-bottom" aria-label="Live Feed" aria-current="page">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+      Feed
+    </button>
+    <button class="nav-tab compose" id="btn-nav-create-bottom" aria-label="New Post">
+      <div class="compose-bubble">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+      </div>
+      <span style="color:#a78bfa;font-size:9px;margin-top:2px">Write</span>
+    </button>
+    <button class="nav-tab" id="btn-nav-profile-bottom" aria-label="Profile">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/></svg>
+      Profile
+    </button>
+    <button class="nav-tab" id="btn-logout-bottom" aria-label="Sign Out">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h6a2 2 0 012 2v1"/></svg>
+      Sign Out
+    </button>
+  </nav>`;
+
+  document.getElementById('btn-logout').addEventListener('click', handleSignOut);
+  document.getElementById('btn-nav-create').addEventListener('click', renderCreatePostScreen);
+  document.getElementById('btn-nav-feed')?.addEventListener('click', renderDashboard);
+  document.getElementById('btn-nav-feed-bottom')?.addEventListener('click', renderDashboard);
+  document.getElementById('btn-nav-create-bottom')?.addEventListener('click', renderCreatePostScreen);
+  document.getElementById('btn-nav-profile-bottom')?.addEventListener('click', renderProfileScreen);
+  document.getElementById('btn-logout-bottom')?.addEventListener('click', handleSignOut);
+  document.getElementById('btn-nav-profile')?.addEventListener('click', renderProfileScreen);
+
+  // Async: load saved profile photo and show it in the sidebar avatar
+  (async () => {
+    const u = auth.currentUser;
+    if (!u) return;
+    try {
+      const snap = await getDoc(doc(db, 'users', u.uid));
+      if (snap.exists() && snap.data().photo) {
+        const el = document.getElementById('sidebar-avatar');
+        if (el) el.innerHTML = `<img src="${snap.data().photo}" alt="Profile" class="w-full h-full object-cover" />`;
+      }
+    } catch (_) {}
+  })();
+
+  /* ── SEARCH LOGIC ──────────────────────────────────────────── */
+  (function initSearch() {
+    const searchInput   = document.getElementById('search-input');
+    const clearBtn      = document.getElementById('search-clear');
+    const resultsPanel  = document.getElementById('search-results-panel');
+    const modeToggle    = document.getElementById('search-mode-toggle');
+    let   searchMode    = 'local';   // 'local' | 'web'
+    let   webDebounce   = null;
+    let   activeIndex   = -1;
+    let   webResults    = [];
+
+    // ── Mode toggle ──────────────────────────────────────────
+    modeToggle.addEventListener('click', (e) => {
+      const pill = e.target.closest('.mode-pill');
+      if (!pill) return;
+      searchMode = pill.dataset.mode;
+      modeToggle.querySelectorAll('.mode-pill').forEach(p => {
+        const on = p.dataset.mode === searchMode;
+        p.classList.toggle('active', on);
+        p.setAttribute('aria-pressed', String(on));
+      });
+      searchInput.placeholder = searchMode === 'local' ? 'Search posts…' : 'Search the web for blog posts…';
+      // Re-run search with new mode
+      const q = searchInput.value.trim();
+      if (q.length > 1) runSearch(q);
+      else closePanel();
+    });
+
+    // ── Input handler ────────────────────────────────────────
+    searchInput.addEventListener('input', () => {
+      const q = searchInput.value.trim();
+      clearBtn.classList.toggle('hidden', q.length === 0);
+      if (q.length < 2) { closePanel(); resetFeedFilter(); return; }
+      runSearch(q);
+    });
+
+    // ── Clear button ─────────────────────────────────────────
+    clearBtn.addEventListener('click', () => {
+      searchInput.value = '';
+      clearBtn.classList.add('hidden');
+      closePanel();
+      resetFeedFilter();
+      searchInput.focus();
+    });
+
+    // ── Keyboard navigation ──────────────────────────────────
+    searchInput.addEventListener('keydown', (e) => {
+      const items = resultsPanel.querySelectorAll('.search-result-item');
+      if (!items.length) {
+        if (e.key === 'Escape') { closePanel(); searchInput.blur(); }
+        return;
+      }
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        activeIndex = Math.min(activeIndex + 1, items.length - 1);
+        highlightItem(items);
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        activeIndex = Math.max(activeIndex - 1, 0);
+        highlightItem(items);
+      } else if (e.key === 'Enter' && activeIndex >= 0) {
+        e.preventDefault();
+        items[activeIndex].click();
+      } else if (e.key === 'Escape') {
+        closePanel();
+        searchInput.blur();
+      }
+    });
+
+    // ── Close on outside click ───────────────────────────────
+    document.addEventListener('click', (e) => {
+      if (!document.getElementById('search-wrapper')?.contains(e.target)) {
+        closePanel();
+      }
+    }, true);
+
+    // ── Main router ──────────────────────────────────────────
+    function runSearch(q) {
+      activeIndex = -1;
+      if (searchMode === 'local') {
+        runLocalSearch(q);
+      } else {
+        runWebSearch(q);
+      }
+    }
+
+    // ── LOCAL search: filter the live feed ───────────────────
+    function runLocalSearch(q) {
+      closePanel();
+      const ql = q.toLowerCase();
+      const container = document.getElementById('feed-container');
+      if (!container || !window._postDocs) return;
+      const docs = Object.values(window._postDocs);
+      const matched = docs.filter(d => {
+        const p = d.data();
+        return (p.title        || '').toLowerCase().includes(ql)
+            || (p.content      || '').toLowerCase().includes(ql)
+            || (p.bloggerName  || '').toLowerCase().includes(ql);
+      });
+
+      if (!matched.length) {
+        showEmptyState('No posts match <strong class="text-purple-300">' + escHtml(q) + '</strong> in Chronicle.');
+        return;
+      }
+      // Rebuild grid with only matching cards
+      container.innerHTML =
+        '<div class="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">' +
+        matched.map(d => buildPostCard(d)).join('') +
+        '</div>';
+      matched.forEach(d => {
+        const card = document.getElementById('card-' + d.id);
+        if (card) card.addEventListener('click', () => openPostModal(d));
+      });
+
+      // Show a subtle "X results" indicator
+      showResultsBadge(matched.length, q);
+    }
+
+    // ── RESET feed after clearing local search ───────────────
+    function resetFeedFilter() {
+      const container = document.getElementById('feed-container');
+      if (!container || !window._postDocs) return;
+      const docs = Object.values(window._postDocs);
+      if (!docs.length) return;
+      container.innerHTML =
+        '<div class="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">' +
+        docs.map(d => buildPostCard(d)).join('') +
+        '</div>';
+      docs.forEach(d => {
+        const card = document.getElementById('card-' + d.id);
+        if (card) card.addEventListener('click', () => openPostModal(d));
+      });
+    }
+
+    // ── WEB search via DuckDuckGo Lite JSON ──────────────────
+    function runWebSearch(q) {
+      clearTimeout(webDebounce);
+      showLoadingState();
+      webDebounce = setTimeout(async () => {
+        try {
+          // DuckDuckGo instant answer API — no key required, CORS-friendly
+          const url = 'https://api.duckduckgo.com/?q=' + encodeURIComponent(q + ' blog') + '&format=json&no_redirect=1&no_html=1&skip_disambig=1';
+          const res  = await fetch(url);
+          const data = await res.json();
+
+          webResults = [];
+
+          // RelatedTopics gives the richest set of results
+          const topics = (data.RelatedTopics || []).flatMap(t =>
+            t.Topics ? t.Topics : [t]
+          ).filter(t => t.FirstURL && t.Text);
+
+          // Also include the primary AbstractURL if available
+          if (data.AbstractURL && data.AbstractText) {
+            webResults.push({
+              title:   data.Heading || q,
+              snippet: data.AbstractText,
+              url:     data.AbstractURL,
+              source:  data.AbstractSource || new URL(data.AbstractURL).hostname
+            });
+          }
+
+          topics.slice(0, 8).forEach(t => {
+            const domain = (() => { try { return new URL(t.FirstURL).hostname; } catch { return ''; } })();
+            webResults.push({ title: t.Text.split(' - ')[0] || t.Text, snippet: t.Text, url: t.FirstURL, source: domain });
+          });
+
+          // Deduplicate by URL
+          webResults = webResults.filter((r, i, a) => a.findIndex(x => x.url === r.url) === i);
+
+          if (!webResults.length) {
+            // Fallback: open a Google search for blogs
+            showWebFallback(q);
+            return;
+          }
+          renderWebResults(webResults, q);
+        } catch (err) {
+          showWebFallback(q);
+        }
+      }, 420);
+    }
+
+    function renderWebResults(results, q) {
+      // Expose a global so the inline onclick on each result can record the view
+      window._saveWebRV = (i) => {
+        const r = results[i];
+        if (!r) return;
+        saveRecentView({
+          type:    'web',
+          id:      null,
+          title:   r.title,
+          snippet: r.snippet,
+          image:   null,
+          author:  null,
+          source:  r.source,
+          url:     r.url,
+        });
+      };
+      resultsPanel.innerHTML =
+        '<div class="px-4 pt-3 pb-1 flex items-center justify-between">' +
+          '<span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Web results for "' + escHtml(q) + '"</span>' +
+          '<span class="text-[10px] text-purple-400 font-semibold">' + results.length + ' found</span>' +
+        '</div>' +
+        results.map((r, i) => `
+          <a class="search-result-item" href="${escHtml(r.url)}" target="_blank" rel="noopener noreferrer"
+             role="option" data-index="${i}" aria-label="${escHtml(r.title)}"
+             onclick="window._saveWebRV(${i})">
+            <div class="search-result-icon" style="background:rgba(99,102,241,0.15);border:1px solid rgba(139,92,246,0.2)">
+              <svg class="w-4 h-4 text-purple-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244"/>
+              </svg>
+            </div>
+            <div class="flex-1 min-w-0">
+              <p class="text-white text-xs font-bold leading-snug line-clamp-1">${escHtml(r.title)}</p>
+              <p class="text-slate-400 text-[11px] leading-snug mt-0.5 line-clamp-2">${escHtml(r.snippet)}</p>
+              <p class="text-purple-500 text-[10px] font-semibold mt-1 truncate">${escHtml(r.source)}</p>
+            </div>
+            <svg class="w-3.5 h-3.5 text-slate-600 flex-shrink-0 mt-1" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 19.5l15-15m0 0H8.25m11.25 0v11.25"/>
+            </svg>
+          </a>`).join('') +
+        '<div class="px-4 py-2 border-t border-purple-500/10">' +
+          '<a href="https://www.google.com/search?q=' + encodeURIComponent(q + ' blog') + '" target="_blank" rel="noopener noreferrer"' +
+          '   class="flex items-center justify-center gap-1.5 w-full py-2 rounded-xl text-[11px] font-bold text-purple-400 hover:text-purple-300 hover:bg-purple-500/10 transition-colors">' +
+          '  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 15.803 7.5 7.5 0 0015.803 15.803z"/></svg>' +
+          '  Search Google for more' +
+          '</a>' +
+        '</div>';
+      openPanel();
+    }
+
+    function showLoadingState() {
+      resultsPanel.innerHTML =
+        '<div class="flex items-center justify-center gap-3 py-8">' +
+          '<div class="w-5 h-5 rounded-full border-2 border-purple-500/30 border-t-purple-400 animate-spin"></div>' +
+          '<span class="text-slate-400 text-xs font-semibold">Searching the web…</span>' +
+        '</div>';
+      openPanel();
+    }
+
+    function showWebFallback(q) {
+      const googleUrl = 'https://www.google.com/search?q=' + encodeURIComponent(q + ' blog');
+      resultsPanel.innerHTML =
+        '<div class="p-5 text-center space-y-3">' +
+          '<p class="text-slate-400 text-xs">No instant results — search Google directly:</p>' +
+          '<a href="' + escHtml(googleUrl) + '" target="_blank" rel="noopener noreferrer"' +
+          '   class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl btn-glow text-white text-xs font-bold">' +
+          '  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 15.803 7.5 7.5 0 0015.803 15.803z"/></svg>' +
+          '  Search Google for "' + escHtml(q) + '"' +
+          '</a>' +
+        '</div>';
+      openPanel();
+    }
+
+    function showEmptyState(html) {
+      const container = document.getElementById('feed-container');
+      if (!container) return;
+      container.innerHTML =
+        '<div class="flex flex-col items-center justify-center py-20 text-center space-y-3">' +
+          '<div class="w-16 h-16 rounded-2xl glass flex items-center justify-center mx-auto">' +
+            '<svg class="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 15.803 7.5 7.5 0 0015.803 15.803z"/></svg>' +
+          '</div>' +
+          '<p class="text-slate-300 text-sm">' + html + '</p>' +
+          '<p class="text-slate-500 text-xs">Try the <button class="text-purple-400 font-bold hover:underline" onclick="document.querySelector(\'[data-mode=web]\').click()">Web search</button> to find external posts.</p>' +
+        '</div>';
+    }
+
+    function showResultsBadge(count, q) {
+      // Inject a small banner above the grid
+      const container = document.getElementById('feed-container');
+      if (!container) return;
+      const banner = document.createElement('div');
+      banner.id = 'search-badge';
+      banner.className = 'flex items-center gap-2 mb-5 px-1';
+      banner.innerHTML =
+        '<span class="text-purple-400 text-xs font-bold">' + count + ' result' + (count !== 1 ? 's' : '') + '</span>' +
+        '<span class="text-slate-600 text-xs">for</span>' +
+        '<span class="text-white text-xs font-semibold">"' + escHtml(q) + '"</span>' +
+        '<button onclick="document.getElementById(\'search-clear\').click()" class="ml-auto text-[10px] text-slate-500 hover:text-slate-300 font-bold uppercase tracking-wide">Clear</button>';
+      container.insertBefore(banner, container.firstChild);
+    }
+
+    // ── Panel helpers ────────────────────────────────────────
+    function openPanel()  { resultsPanel.classList.add('open');    }
+    function closePanel() { resultsPanel.classList.remove('open'); activeIndex = -1; }
+
+    function highlightItem(items) {
+      items.forEach((el, i) => {
+        el.classList.toggle('bg-purple-500/10', i === activeIndex);
+        if (i === activeIndex) el.scrollIntoView({ block: 'nearest' });
+      });
+    }
+  })(); // end initSearch
+
+  feedUnsub = initLiveFeed((snapshot) => {
+    const container = document.getElementById('feed-container');
+    if (!container) return;
+    if (snapshot.empty) {
+      container.innerHTML = `
+        <div class="flex flex-col items-center justify-center py-28 text-center space-y-5">
+          <div class="w-20 h-20 rounded-3xl glass flex items-center justify-center mx-auto">
+            <svg class="w-10 h-10 text-purple-500" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg>
+          </div>
+          <div>
+            <p class="text-white font-bold text-lg">No posts yet</p>
+            <p class="text-slate-500 text-sm mt-1">Be the first to publish something.</p>
+          </div>
+          <button onclick="document.getElementById('btn-nav-create').click()"
+            class="btn-glow px-6 py-2.5 rounded-xl text-white text-sm font-bold focus:outline-none">Write a Post</button>
+        </div>`;
+      return;
+    }
+    // Store snapshot docs on window for modal access
+    window._postDocs = {};
+    snapshot.docs.forEach(d => { window._postDocs[d.id] = d; });
+
+    container.innerHTML = `<div class="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">` +
+      snapshot.docs.map(doc => buildPostCard(doc)).join('') +
+    `</div>`;
+
+    // Attach click listeners to every card
+    snapshot.docs.forEach(doc => {
+      const card = document.getElementById('card-' + doc.id);
+      if (card) card.addEventListener('click', () => openPostModal(doc));
+    });
+
+    // Show recently viewed section above the feed (if history exists)
+    renderRecentlyViewed();
+  });
+}
+
+/* ═══════════════════════════════════════════════════════
+   HELPER: BUILD POST CARD HTML
+   ═══════════════════════════════════════════════════════ */
+function buildPostCard(doc) {
+  const post = doc.data();
+  const id   = doc.id;
+  const user = auth.currentUser;
+  const isOwner = user && post.bloggerId === user.uid;
+
+  const dateStr = post.createdAt
+    ? new Date(post.createdAt.toDate()).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+    : 'Just now';
+
+  const PREVIEW_LEN = 140;
+  const previewText = post.content && post.content.length > PREVIEW_LEN
+    ? post.content.substring(0, PREVIEW_LEN) + '…'
+    : (post.content || '');
+
+  const safeTitle   = escHtml(post.title   || 'Untitled Post');
+  const safeBlogger = escHtml(post.bloggerName || 'Anonymous');
+  const safePreview = escHtml(previewText);
+  const isoDate     = post.createdAt ? post.createdAt.toDate().toISOString() : '';
+  const initial     = escHtml((post.bloggerName?.[0] || 'A').toUpperCase());
+
+  // Reading time estimate
+  const wordCount = (post.content || '').split(/\s+/).filter(Boolean).length;
+  const readMins  = Math.max(1, Math.round(wordCount / 200));
+
+  // Tag colours and accent colours cycle through a palette
+  const tagColors    = ['from-indigo-500 to-purple-600','from-pink-500 to-rose-600','from-cyan-500 to-blue-600','from-amber-500 to-orange-600'];
+  const accentColors = ['rgba(99,102,241,0.55)','rgba(236,72,153,0.55)','rgba(6,182,212,0.55)','rgba(245,158,11,0.55)'];
+  const tagColor  = tagColors[id.charCodeAt(0) % tagColors.length];
+  const accent    = accentColors[id.charCodeAt(0) % accentColors.length];
+
+  return `
+  <article id="card-${id}"
+    class="card-lift glass rounded-2xl overflow-hidden flex flex-col group post-card"
+    role="article" aria-label="Blog post: ${safeTitle}" tabindex="0"
+    onkeydown="if(event.key==='Enter'||event.key===' '){document.getElementById('card-${id}').click()}">
+
+    <!-- Cover -->
+    ${post.image ? `
+    <div class="relative h-44 overflow-hidden flex-shrink-0">
+      <img src="${escHtml(post.image)}" alt="Cover for ${safeTitle}"
+           class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+           loading="lazy" decoding="async" />
+      <div class="absolute inset-0" style="background:linear-gradient(to top,rgba(10,8,30,0.72) 0%,transparent 55%)"></div>
+      ${isOwner ? `<span class="absolute top-3 right-3 text-[10px] font-bold px-2 py-0.5 rounded-full text-purple-200 backdrop-blur-sm" style="background:rgba(139,92,246,0.35);border:1px solid rgba(139,92,246,0.4)">Your post</span>` : ''}
+    </div>` : `
+    <div class="relative h-44 flex-shrink-0 flex items-center justify-center overflow-hidden"
+         style="background:linear-gradient(135deg,rgba(99,102,241,0.1),rgba(139,92,246,0.1))">
+      <div class="absolute inset-0 dot-grid opacity-20"></div>
+      <div class="w-14 h-14 rounded-2xl bg-gradient-to-br ${tagColor} flex items-center justify-center text-white font-black text-xl shadow-lg opacity-50 group-hover:opacity-80 transition-opacity duration-300">
+        ${initial}
+      </div>
+      ${isOwner ? `<span class="absolute top-3 right-3 text-[10px] font-bold px-2 py-0.5 rounded-full text-purple-200" style="background:rgba(139,92,246,0.35);border:1px solid rgba(139,92,246,0.4)">Your post</span>` : ''}
+    </div>`}
+
+    <!-- Accent bar -->
+    <div class="h-px w-full flex-shrink-0" style="background:linear-gradient(to right,${accent},transparent 70%)"></div>
+
+    <!-- Body -->
+    <div class="flex flex-col flex-1 p-5 gap-2.5">
+      <!-- Author row -->
+      <div class="flex items-center gap-2 min-w-0">
+        <div class="w-6 h-6 rounded-full bg-gradient-to-br ${tagColor} flex items-center justify-center text-white font-black text-[10px] flex-shrink-0">${initial}</div>
+        <span class="text-purple-300 text-xs font-semibold truncate">${safeBlogger}</span>
+        <time class="text-slate-500 text-[11px] ml-auto flex-shrink-0" datetime="${escHtml(isoDate)}">${escHtml(dateStr)}</time>
+      </div>
+      <!-- Title -->
+      <h3 class="text-[15px] font-bold text-white leading-snug tracking-tight line-clamp-2 group-hover:text-purple-200 transition-colors">${safeTitle}</h3>
+      <!-- Preview -->
+      <p class="text-slate-400 text-[13px] leading-relaxed flex-1 line-clamp-3">${safePreview}</p>
+      <!-- Footer -->
+      <div class="flex items-center justify-between pt-2 mt-auto" style="border-top:1px solid rgba(255,255,255,0.05)">
+        <div class="flex items-center gap-3">
+          <span class="text-purple-400 text-xs font-bold group-hover:text-purple-300 transition-colors flex items-center gap-1">
+            Read
+            <svg class="w-3 h-3 transition-transform group-hover:translate-x-0.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>
+          </span>
+          <span class="text-slate-600 text-[11px] flex items-center gap-1">
+            <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            ${readMins} min
+          </span>
+          ${post.viewCount > 0 ? `
+          <span class="text-slate-600 text-[11px] flex items-center gap-1">
+            <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.964-7.178z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+            ${post.viewCount >= 1000 ? (post.viewCount / 1000).toFixed(1) + 'k' : post.viewCount}
+          </span>` : ''}
+        </div>
+        ${isOwner ? `
+        <button
+          onclick="event.stopPropagation();window._openEdit('${id}')"
+          class="flex items-center gap-1 text-[11px] font-bold text-slate-600 hover:text-purple-300 transition-colors px-2 py-1 rounded-lg hover:bg-purple-500/10 focus:outline-none"
+          aria-label="Edit this post">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z"/></svg>
+          Edit
+        </button>` : ''}
+      </div>
+    </div>
+  </article>`;
+}
+
+// Global helper for the inline edit button onclick
+window._openEdit = function(id) {
+  const doc = window._postDocs?.[id];
+  if (!doc) return;
+  const post = doc.data();
+  openEditModal(id, post.title, post.content);
+};
+
+/* ═══════════════════════════════════════════════════════
+   VIEW: CREATE POST SCREEN
+   ═══════════════════════════════════════════════════════ */
+function renderCreatePostScreen() {
+  stopFeed();
+  app.innerHTML = `
+  <div class="min-h-screen flex flex-col">
+    <!-- Top bar -->
+    <header class="sticky top-0 z-30 px-5 py-3 flex items-center gap-4 shadow-sm"
+            style="background:rgba(10,8,30,0.9);backdrop-filter:blur(20px);border-bottom:1px solid rgba(139,92,246,0.15)">
+      <button id="btn-back"
+        class="flex items-center gap-1.5 text-slate-400 hover:text-white transition-colors text-sm font-semibold
+               focus:outline-none focus:ring-2 focus:ring-purple-400 rounded-lg px-2 py-1" aria-label="Back to feed">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+        Back
+      </button>
+      <div class="flex-1">
+        <h1 class="text-sm font-black text-white tracking-tight">New Post</h1>
+      </div>
+    </header>
+
+    <main class="flex-1 flex items-start justify-center px-5 py-8 create-scroll-area">
+      <div class="w-full max-w-2xl space-y-6">
+
+        <!-- Image attachment -->
+        <section class="glass rounded-2xl overflow-hidden" aria-label="Image attachment">
+          <div id="img-preview-wrapper" class="hidden relative">
+            <img id="post-preview" src="" alt="Selected image preview" class="w-full max-h-72 object-cover" />
+            <button id="btn-remove-img"
+              class="absolute top-3 right-3 w-9 h-9 bg-black/60 hover:bg-rose-600/80 text-white rounded-full flex items-center justify-center transition-colors backdrop-blur-sm"
+              aria-label="Remove image">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+          </div>
+          <div id="img-picker-ui" class="p-5 space-y-4">
+            <div class="flex items-center gap-2 mb-1">
+              <svg class="w-4 h-4 text-purple-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909"/></svg>
+              <span class="text-sm font-bold text-white">Attach an Image <span class="text-rose-400">*</span></span>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+              <button type="button" id="btn-camera-trigger"
+                class="flex flex-col items-center justify-center gap-2 p-5 rounded-xl cursor-pointer transition-all text-center focus:outline-none focus:ring-2 focus:ring-purple-400"
+                style="background:rgba(99,102,241,0.08);border:2px dashed rgba(139,92,246,0.3)" onmouseover="this.style.borderColor='rgba(139,92,246,0.6)'" onmouseout="this.style.borderColor='rgba(139,92,246,0.3)'">
+                <svg class="w-7 h-7 text-indigo-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z"/><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0zM18.75 10.5h.008v.008h-.008V10.5z"/></svg>
+                <span class="text-xs font-bold text-white">Take Photo</span>
+                <span class="text-[10px] text-slate-500">Opens camera</span>
+              </button>
+              <label for="gal-in"
+                class="flex flex-col items-center justify-center gap-2 p-5 rounded-xl cursor-pointer transition-all text-center focus-within:ring-2 focus-within:ring-purple-400"
+                style="background:rgba(139,92,246,0.08);border:2px dashed rgba(139,92,246,0.3)" onmouseover="this.style.borderColor='rgba(139,92,246,0.6)'" onmouseout="this.style.borderColor='rgba(139,92,246,0.3)'">
+                <svg class="w-7 h-7 text-purple-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M13.5 12a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z"/></svg>
+                <span class="text-xs font-bold text-white">Choose from Gallery</span>
+                <span class="text-[10px] text-slate-500">Browse your photos</span>
+                <input type="file" id="gal-in" accept="image/*" class="sr-only" aria-label="Select from gallery" />
+              </label>
+            </div>
+            <p class="text-[10px] text-slate-600 text-center">Max 800KB &bull; JPG, PNG, WebP</p>
+          </div>
+        </section>
+
+        <!-- Camera modal -->
+        <div id="camera-modal" class="hidden fixed inset-0 z-50 bg-black flex flex-col items-center justify-center" role="dialog" aria-modal="true" aria-label="Camera viewfinder">
+          <video id="camera-stream" autoplay playsinline muted class="w-full max-h-[70vh] object-cover"></video>
+          <canvas id="camera-canvas" class="hidden"></canvas>
+          <div class="w-full flex items-center justify-between px-8 py-6 bg-black/80">
+            <button type="button" id="btn-camera-cancel" class="flex flex-col items-center gap-1 text-white/70 hover:text-white transition-colors focus:outline-none" aria-label="Cancel camera">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+              <span class="text-[10px] font-bold uppercase tracking-wide">Cancel</span>
+            </button>
+            <button type="button" id="btn-shutter" class="w-16 h-16 rounded-full bg-white border-4 border-slate-300 hover:bg-slate-100 active:scale-95 transition-transform flex items-center justify-center shadow-lg focus:outline-none focus:ring-4 focus:ring-purple-400" aria-label="Take photo">
+              <div class="w-12 h-12 rounded-full bg-white border-2 border-slate-200"></div>
+            </button>
+            <button type="button" id="btn-flip-camera" class="flex flex-col items-center gap-1 text-white/70 hover:text-white transition-colors focus:outline-none" aria-label="Switch camera">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99"/></svg>
+              <span class="text-[10px] font-bold uppercase tracking-wide">Flip</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Post form -->
+        <form id="post-form" class="glass rounded-2xl p-6 space-y-5" novalidate>
+          <div class="space-y-1.5">
+            <label for="post-title" class="block text-xs font-bold text-purple-300 uppercase tracking-widest">Title <span class="text-rose-400">*</span></label>
+            <input type="text" id="post-title" name="title" required maxlength="120"
+              placeholder="Your compelling headline…"
+              class="input-dark w-full px-4 py-3 text-sm font-semibold" />
+          </div>
+          <div class="space-y-1.5">
+            <label for="post-content" class="block text-xs font-bold text-purple-300 uppercase tracking-widest">Content <span class="text-rose-400">*</span></label>
+            <textarea id="post-content" name="content" required rows="8" maxlength="5000"
+              placeholder="Share your story, insight, or idea…"
+              class="input-dark w-full px-4 py-3 text-sm resize-none leading-relaxed"></textarea>
+            <p class="text-right text-[10px] text-slate-500"><span id="char-count">0</span> / 5000</p>
+          </div>
+          <button type="submit" id="publish-btn"
+            class="btn-glow w-full py-3.5 rounded-xl text-white text-sm font-bold tracking-wide
+                   disabled:opacity-60 flex items-center justify-center gap-2
+                   focus:outline-none focus:ring-2 focus:ring-purple-400 focus:ring-offset-2 focus:ring-offset-transparent">
+            <svg id="publish-icon" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5"/></svg>
+            <span id="publish-label">Publish Post</span>
+          </button>
+        </form>
+
+      </div>
+    </main>
+  </div>`;
+
+  document.getElementById('btn-back').addEventListener('click', () => { clearSelectedImage(); renderDashboard(); });
+
+  const contentArea = document.getElementById('post-content');
+  const charCountEl = document.getElementById('char-count');
+  charCountEl.textContent = contentArea.value.length;
+  contentArea.addEventListener('input', () => { charCountEl.textContent = contentArea.value.length; });
+
+  const handleImageSelect = (file) => {
+    if (!file) return;
+    processImageFile(file, 'post-preview', () => {
+      document.getElementById('img-preview-wrapper').classList.remove('hidden');
+      document.getElementById('img-picker-ui').classList.add('hidden');
+    });
+  };
+
+  document.getElementById('gal-in').addEventListener('change', (e) => handleImageSelect(e.target.files[0]));
+  document.getElementById('btn-remove-img').addEventListener('click', () => {
+    clearSelectedImage();
+    document.getElementById('post-preview').src = '';
+    document.getElementById('img-preview-wrapper').classList.add('hidden');
+    document.getElementById('img-picker-ui').classList.remove('hidden');
+    document.getElementById('gal-in').value = '';
+  });
+
+  let cameraStream = null;
+  let facingMode   = 'environment';
+
+  function stopCameraStream() {
+    if (cameraStream) { cameraStream.getTracks().forEach(t => t.stop()); cameraStream = null; }
+    document.getElementById('camera-modal').classList.add('hidden');
+  }
+
+  async function startCameraStream() {
+    if (cameraStream) { cameraStream.getTracks().forEach(t => t.stop()); cameraStream = null; }
+    if (!navigator.mediaDevices?.getUserMedia) { window.showToast('Camera not supported.', 'error'); return; }
+    try {
+      cameraStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode, width: { ideal: 1920 }, height: { ideal: 1080 } }, audio: false });
+      document.getElementById('camera-stream').srcObject = cameraStream;
+      document.getElementById('camera-modal').classList.remove('hidden');
+    } catch (err) {
+      const msg = err.name === 'NotAllowedError' ? 'Camera permission denied.' :
+                  err.name === 'NotFoundError'   ? 'No camera found on this device.' :
+                  'Could not open camera: ' + err.message;
+      window.showToast(msg, 'error');
+    }
+  }
+
+  document.getElementById('btn-camera-trigger').addEventListener('click', () => { facingMode = 'environment'; startCameraStream(); });
+  document.getElementById('btn-camera-cancel').addEventListener('click', stopCameraStream);
+  document.getElementById('btn-flip-camera').addEventListener('click', () => { facingMode = facingMode === 'environment' ? 'user' : 'environment'; startCameraStream(); });
+  document.getElementById('btn-shutter').addEventListener('click', () => {
+    const video = document.getElementById('camera-stream');
+    const canvas = document.getElementById('camera-canvas');
+    canvas.width  = video.videoWidth  || 1280;
+    canvas.height = video.videoHeight || 720;
+    const ctx = canvas.getContext('2d');
+    if (facingMode === 'user') { ctx.translate(canvas.width, 0); ctx.scale(-1, 1); }
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+    if (dataUrl.length > 1_100_000) { window.showToast('Captured image too large. Try again.', 'error'); return; }
+    canvas.toBlob((blob) => {
+      const syntheticFile = new File([blob], 'camera-capture.jpg', { type: 'image/jpeg' });
+      processImageFile(syntheticFile, 'post-preview', () => {
+        document.getElementById('img-preview-wrapper').classList.remove('hidden');
+        document.getElementById('img-picker-ui').classList.add('hidden');
+      });
+      stopCameraStream();
+    }, 'image/jpeg', 0.85);
+  });
+
+  document.getElementById('post-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = document.getElementById('publish-btn');
+    const label = document.getElementById('publish-label');
+    btn.disabled = true; label.textContent = 'Publishing…';
+    await handleCreatePost(
+      document.getElementById('post-title').value,
+      document.getElementById('post-content').value,
+      () => { window.showToast('Post published!', 'success'); renderDashboard(); }
+    );
+    btn.disabled = false; label.textContent = 'Publish Post';
+  });
+}
+
+/* ═══════════════════════════════════════════════════════
+   VIEW: PROFILE SCREEN
+   ═══════════════════════════════════════════════════════ */
+let _profileCameraStream  = null;
+let _profileFacingMode    = 'user';
+let _profilePhotoBase64   = null;
+
+function stopProfileCamera() {
+  if (_profileCameraStream) {
+    _profileCameraStream.getTracks().forEach(t => t.stop());
+    _profileCameraStream = null;
+  }
+}
+
+async function renderProfileScreen() {
+  stopFeed();
+  sessionStorage.setItem('chronicle_view', 'profile');
+  const user = auth.currentUser;
+
+  // Load saved profile from Firestore
+  let profile = {};
+  try {
+    const snap = await getDoc(doc(db, 'users', user.uid));
+    if (snap.exists()) profile = snap.data();
+  } catch (_) {}
+
+  _profilePhotoBase64 = profile.photo || null;
+
+  const avatarContent = _profilePhotoBase64
+    ? `<img id="profile-photo-img" src="${_profilePhotoBase64}" alt="Profile photo" class="w-full h-full object-cover" />`
+    : `<span id="profile-photo-initial" class="text-3xl font-black text-white">${(user.displayName?.[0] || 'A').toUpperCase()}</span>`;
+
+  const removePhotoBtn = _profilePhotoBase64
+    ? `<button id="btn-remove-profile-photo"
+         class="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold text-rose-400 hover:text-rose-300 transition-colors focus:outline-none"
+         style="border:1px solid rgba(239,68,68,0.2);background:rgba(239,68,68,0.06)">
+         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"/></svg>
+         Remove
+       </button>`
+    : '';
+
+  app.innerHTML = `
+  <div class="min-h-screen flex flex-col">
+    <!-- Top bar -->
+    <header class="sticky top-0 z-30 px-5 py-3 flex items-center gap-4 shadow-sm"
+            style="background:rgba(10,8,30,0.9);backdrop-filter:blur(20px);border-bottom:1px solid rgba(139,92,246,0.15)">
+      <button id="btn-profile-back"
+        class="flex items-center gap-1.5 text-slate-400 hover:text-white transition-colors text-sm font-semibold
+               focus:outline-none focus:ring-2 focus:ring-purple-400 rounded-lg px-2 py-1" aria-label="Back to feed">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+        Back
+      </button>
+      <h1 class="text-white font-black text-base tracking-tight">My Profile</h1>
+    </header>
+
+    <!-- Content -->
+    <div class="flex-1 px-5 py-8 max-w-lg mx-auto w-full space-y-8">
+
+      <!-- Photo section -->
+      <div class="flex flex-col items-center gap-4">
+        <div id="profile-avatar-ring" class="w-24 h-24 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center overflow-hidden shadow-xl shadow-indigo-500/30 ring-4 ring-purple-500/30">
+          ${avatarContent}
+        </div>
+
+        <!-- Picker / Camera buttons (shown when camera is off) -->
+        <div id="profile-photo-ui" class="flex flex-wrap gap-2 justify-center">
+          <button id="btn-profile-camera"
+            class="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold text-white
+                   focus:outline-none focus:ring-2 focus:ring-purple-400"
+            style="background:linear-gradient(135deg,rgba(99,102,241,0.4),rgba(139,92,246,0.4));border:1px solid rgba(139,92,246,0.35)">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z"/><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0zM18.75 10.5h.008v.008h-.008V10.5z"/></svg>
+            Take Photo
+          </button>
+          <label class="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold text-slate-300 cursor-pointer
+                        hover:text-white transition-colors focus-within:ring-2 focus-within:ring-purple-400"
+                 style="border:1px solid rgba(139,92,246,0.25);background:rgba(255,255,255,0.05)">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3 21h18M3.75 3h16.5M4.5 3v18M19.5 3v18"/></svg>
+            Choose Photo
+            <input type="file" id="profile-file-input" accept="image/*" class="hidden" />
+          </label>
+          ${removePhotoBtn}
+        </div>
+
+        <!-- Camera live view (hidden until Take Photo clicked) -->
+        <div id="profile-camera-wrapper" class="hidden w-full max-w-sm space-y-3">
+          <div class="relative rounded-2xl overflow-hidden bg-black" style="aspect-ratio:4/3">
+            <video id="profile-camera-stream" autoplay playsinline class="w-full h-full object-cover" style="transform:scaleX(-1)"></video>
+            <canvas id="profile-camera-canvas" class="hidden"></canvas>
+          </div>
+          <div class="flex gap-2 justify-center">
+            <button id="btn-profile-shutter"
+              class="flex items-center gap-1.5 px-5 py-2 rounded-xl text-sm font-bold text-white focus:outline-none focus:ring-2 focus:ring-purple-400"
+              style="background:linear-gradient(135deg,#6366f1,#a78bfa)">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4" fill="currentColor" stroke="none"/></svg>
+              Capture
+            </button>
+            <button id="btn-profile-flip"
+              class="px-4 py-2 rounded-xl text-xs font-bold text-slate-300 hover:text-white transition-colors focus:outline-none"
+              style="border:1px solid rgba(139,92,246,0.25);background:rgba(255,255,255,0.05)">
+              Flip
+            </button>
+            <button id="btn-profile-stop-camera"
+              class="px-4 py-2 rounded-xl text-xs font-bold text-slate-400 hover:text-rose-400 transition-colors focus:outline-none">
+              Cancel
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Profile form -->
+      <form id="profile-form" class="space-y-4" novalidate>
+        <div class="space-y-1.5">
+          <label for="profile-name" class="block text-xs font-bold text-purple-300 uppercase tracking-widest">Display Name</label>
+          <input type="text" id="profile-name" autocomplete="name"
+            value="${escHtml(user.displayName || '')}"
+            class="input-dark w-full px-4 py-3 text-sm font-semibold" />
+        </div>
+        <div class="space-y-1.5">
+          <label for="profile-email" class="block text-xs font-bold text-purple-300 uppercase tracking-widest">Email</label>
+          <input type="email" id="profile-email" autocomplete="email"
+            value="${escHtml(user.email || '')}" readonly
+            class="input-dark w-full px-4 py-3 text-sm opacity-60 cursor-not-allowed" />
+        </div>
+        <div class="space-y-1.5">
+          <label for="profile-dob" class="block text-xs font-bold text-purple-300 uppercase tracking-widest">Date of Birth</label>
+          <input type="date" id="profile-dob"
+            value="${escHtml(profile.dob || '')}"
+            class="input-dark w-full px-4 py-3 text-sm" style="color-scheme:dark" />
+        </div>
+        <div class="space-y-1.5">
+          <label for="profile-phone" class="block text-xs font-bold text-purple-300 uppercase tracking-widest">Phone Number</label>
+          <input type="tel" id="profile-phone" autocomplete="tel"
+            value="${escHtml(profile.phone || '')}"
+            placeholder="+1 555 000 0000"
+            class="input-dark w-full px-4 py-3 text-sm" />
+        </div>
+        <div class="space-y-1.5">
+          <label for="profile-city" class="block text-xs font-bold text-purple-300 uppercase tracking-widest">City</label>
+          <input type="text" id="profile-city" autocomplete="address-level2"
+            value="${escHtml(profile.city || '')}"
+            placeholder="e.g. New York"
+            class="input-dark w-full px-4 py-3 text-sm" />
+        </div>
+        <div class="space-y-1.5">
+          <label for="profile-bio" class="block text-xs font-bold text-purple-300 uppercase tracking-widest">Bio</label>
+          <textarea id="profile-bio" rows="4"
+            placeholder="Tell the world a little about yourself…"
+            class="input-dark w-full px-4 py-3 text-sm resize-none">${escHtml(profile.bio || '')}</textarea>
+        </div>
+        <button type="submit" id="profile-save-btn"
+          class="btn-glow w-full py-3 rounded-2xl text-white font-black text-sm tracking-wide focus:outline-none focus:ring-2 focus:ring-purple-400">
+          <span id="profile-save-label">Save Changes</span>
+        </button>
+      </form>
+    </div>
+  </div>`;
+
+  // ── Back ──────────────────────────────────────────────────────
+  document.getElementById('btn-profile-back').addEventListener('click', () => {
+    stopProfileCamera();
+    sessionStorage.removeItem('chronicle_view');
+    renderDashboard();
+  });
+
+  // ── File picker ───────────────────────────────────────────────
+  document.getElementById('profile-file-input').addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    if (file.size > 800_000) {
+      window.showToast('Image too large. Please choose a photo under 800KB.', 'error');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      _profilePhotoBase64 = reader.result;
+      const ring = document.getElementById('profile-avatar-ring');
+      if (ring) ring.innerHTML = `<img src="${_profilePhotoBase64}" alt="Profile photo" class="w-full h-full object-cover" />`;
+    };
+    reader.readAsDataURL(file);
+  });
+
+  // ── Remove profile photo ───────────────────────────────────────
+  const removePhotoEl = document.getElementById('btn-remove-profile-photo');
+  if (removePhotoEl) {
+    removePhotoEl.addEventListener('click', () => {
+      _profilePhotoBase64 = null;
+      const initial = (user.displayName?.[0] || 'A').toUpperCase();
+      const ring = document.getElementById('profile-avatar-ring');
+      if (ring) ring.innerHTML = `<span class="text-3xl font-black text-white">${initial}</span>`;
+      removePhotoEl.remove();
+    });
+  }
+
+  // ── Camera ────────────────────────────────────────────────────
+  async function startProfileCamera() {
+    try {
+      _profileCameraStream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: _profileFacingMode }, audio: false
+      });
+      const videoEl = document.getElementById('profile-camera-stream');
+      if (videoEl) videoEl.srcObject = _profileCameraStream;
+      document.getElementById('profile-photo-ui').classList.add('hidden');
+      document.getElementById('profile-camera-wrapper').classList.remove('hidden');
+    } catch (err) {
+      window.showToast('Camera unavailable: ' + err.message, 'error');
+    }
+  }
+
+  document.getElementById('btn-profile-camera').addEventListener('click', startProfileCamera);
+
+  document.getElementById('btn-profile-flip').addEventListener('click', () => {
+    _profileFacingMode = _profileFacingMode === 'environment' ? 'user' : 'environment';
+    stopProfileCamera();
+    startProfileCamera();
+  });
+
+  document.getElementById('btn-profile-stop-camera').addEventListener('click', () => {
+    stopProfileCamera();
+    document.getElementById('profile-camera-wrapper').classList.add('hidden');
+    document.getElementById('profile-photo-ui').classList.remove('hidden');
+  });
+
+  document.getElementById('btn-profile-shutter').addEventListener('click', () => {
+    const video  = document.getElementById('profile-camera-stream');
+    const canvas = document.getElementById('profile-camera-canvas');
+    canvas.width  = video.videoWidth  || 640;
+    canvas.height = video.videoHeight || 480;
+    const ctx = canvas.getContext('2d');
+    if (_profileFacingMode === 'user') { ctx.translate(canvas.width, 0); ctx.scale(-1, 1); }
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    canvas.toBlob((blob) => {
+      if (blob.size > 800_000) { window.showToast('Captured image too large. Try again.', 'error'); return; }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        _profilePhotoBase64 = reader.result;
+        const ring = document.getElementById('profile-avatar-ring');
+        if (ring) ring.innerHTML = `<img src="${_profilePhotoBase64}" alt="Profile photo" class="w-full h-full object-cover" />`;
+        stopProfileCamera();
+        document.getElementById('profile-camera-wrapper').classList.add('hidden');
+        document.getElementById('profile-photo-ui').classList.remove('hidden');
+      };
+      reader.readAsDataURL(blob);
+    }, 'image/jpeg', 0.85);
+  });
+
+  // ── Save ──────────────────────────────────────────────────────
+  document.getElementById('profile-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn   = document.getElementById('profile-save-btn');
+    const label = document.getElementById('profile-save-label');
+    btn.disabled = true; label.textContent = 'Saving…';
+
+    const newName = document.getElementById('profile-name').value.trim();
+    const profileData = {
+      dob:   document.getElementById('profile-dob').value,
+      phone: document.getElementById('profile-phone').value.trim(),
+      city:  document.getElementById('profile-city').value.trim(),
+      bio:   document.getElementById('profile-bio').value.trim(),
+    };
+    profileData.photo = _profilePhotoBase64 || null;
+
+    try {
+      // Update Firestore profile document
+      await setDoc(doc(db, 'users', user.uid), profileData, { merge: true });
+
+      // Update Firebase Auth display name if changed
+      if (newName && newName !== user.displayName) {
+        await updateProfile(user, { displayName: newName });
+      }
+
+      window.showToast('Profile saved!', 'success');
+      stopProfileCamera();
+      sessionStorage.removeItem('chronicle_view');
+      renderDashboard();
+    } catch (err) {
+      console.error('Profile save error:', err);
+      window.showToast('Save failed: ' + err.message, 'error');
+      btn.disabled = false; label.textContent = 'Save Changes';
+    }
+  });
+}
+
+/* ═══════════════════════════════════════════════════════
+   AUTH STATE LISTENER — central routing engine
+   ═══════════════════════════════════════════════════════ */
+onAuthStateChanged(auth, (user) => {
+  hideLoader();
+  if (user && user.emailVerified) {
+    const savedView = sessionStorage.getItem('chronicle_view');
+    if (savedView === 'profile') {
+      renderProfileScreen();
+    } else {
+      renderDashboard();
+    }
+  } else {
+    sessionStorage.removeItem('chronicle_view');
+    renderAuthScreen('login');
+  }
+});
+
+</script>
+</body>
+</html>

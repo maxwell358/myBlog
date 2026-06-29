@@ -1,0 +1,43 @@
+/*
+ * index.css
+ * Minimal base styles for the Chronicle app.
+ * Tailwind CDN handles the utility layer — this file only adds
+ * essentials that Tailwind doesn't cover (safe-area insets, tap highlight).
+ *
+ * CRITICAL: Do NOT add background-color or text-transform rules here —
+ * they override Tailwind classes and break the UI theme.
+ */
+
+* {
+  /* Remove the blue flash on tap for mobile web views */
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+  box-sizing: border-box;
+}
+
+html {
+  /* Prevent pull-to-refresh from triggering on scroll bounce (mobile) */
+  overscroll-behavior: none;
+}
+
+body {
+  /* Allow text selection in blog content (override Cordova default) */
+  -webkit-user-select: text;
+  user-select: text;
+
+  /* Respect device safe areas (notch, home indicator) */
+  padding-top:    env(safe-area-inset-top,    0px);
+  padding-right:  env(safe-area-inset-right,  0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  padding-left:   env(safe-area-inset-left,   0px);
+}
+
+/* Prevent font size inflation on landscape rotation (iOS Safari) */
+html, body {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+/* Smooth scrolling for anchor navigation */
+html {
+  scroll-behavior: smooth;
+}
