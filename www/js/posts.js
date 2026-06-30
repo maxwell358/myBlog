@@ -14,6 +14,7 @@ import {
   updateDoc,
   deleteDoc,
   arrayUnion,
+  arrayRemove,
   query,
   where,
   getDocs,
@@ -343,6 +344,33 @@ export async function incrementViewCount(postId) {
   } catch (error) {
     // Silent fail — view count is non-critical
     console.warn("View count update failed:", error.message);
+  }
+}
+
+/**
+ * toggleLike
+ * Adds or removes the current user's UID from the post's `likedBy` array.
+ * If the user has already liked the post, their UID is removed (unlike).
+ * Otherwise it is added (like). The live feed snapshot will propagate the
+ * updated count back to all cards automatically.
+ *
+ * @param {string}   postId   - Firestore document ID
+ * @param {string[]} likedBy  - current likedBy array from the post document
+ */
+export async function toggleLike(postId, likedBy = []) {
+  const user = auth.currentUser;
+  if (!user) {
+    window.showToast("Sign in to like posts.", "error");
+    return;
+  }
+  const postRef = doc(db, "posts", postId);
+  const hasLiked = likedBy.includes(user.uid);
+  try {
+    await updateDoc(postRef, {
+      likedBy: hasLiked ? arrayRemove(user.uid) : arrayUnion(user.uid)
+    });
+  } catch (error) {
+    console.warn("Like update failed:", error.message);
   }
 }
 
