@@ -19,6 +19,7 @@ import {
   where,
   getDocs,
   orderBy,
+  limit,
   onSnapshot,
   serverTimestamp,
   increment
@@ -63,7 +64,8 @@ export function clearSelectedImage() {
 export function initLiveFeed(callback) {
   const postsQuery = query(
     collection(db, "posts"),
-    orderBy("createdAt", "desc")
+    orderBy("createdAt", "desc"),
+    limit(20)
   );
 
   // onSnapshot fires immediately with current data, then on every change
