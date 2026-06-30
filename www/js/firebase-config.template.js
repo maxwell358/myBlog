@@ -10,13 +10,13 @@ import { getAuth }        from "https://www.gstatic.com/firebasejs/10.12.2/fireb
 import { getFirestore }   from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = {
-  apiKey:            "AIzaSyA3Y430HZ0JZ8n8eBw9csWadYecyCjvoWo",
-  authDomain:        "blog-e25c5.firebaseapp.com",
-  projectId:         "blog-e25c5",
-  storageBucket:     "blog-e25c5.firebasestorage.app",
-  messagingSenderId: "515957528950",
-  appId:             "1:515957528950:web:7ac513052bad08b1370257",
-  measurementId:     "G-LZQ4521QMY"
+  apiKey:            "{{FIREBASE_API_KEY}}",
+  authDomain:        "{{FIREBASE_AUTH_DOMAIN}}",
+  projectId:         "{{FIREBASE_PROJECT_ID}}",
+  storageBucket:     "{{FIREBASE_STORAGE_BUCKET}}",
+  messagingSenderId: "{{FIREBASE_MESSAGING_SENDER_ID}}",
+  appId:             "{{FIREBASE_APP_ID}}",
+  measurementId:     "{{FIREBASE_MEASUREMENT_ID}}"
 };
 
 // Initialise once and export — all other modules import from here

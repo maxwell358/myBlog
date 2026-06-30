@@ -17,6 +17,14 @@
 
 .DS_Store
 
+# Environment secrets — never commit
+.env
+.env.local
+.env.*.local
+
+# Generated from .env by `npm run build:config` — never commit
+www/js/firebase-config.js
+
 # IDEs
 .idea/
 .vscode/
