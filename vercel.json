@@ -1,4 +1,5 @@
 {
+  "buildCommand": "npm run build:config",
   "outputDirectory": "www",
   "rewrites": [
     { "source": "/(.*)", "destination": "/index.html" }
